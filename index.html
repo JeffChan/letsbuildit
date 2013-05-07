@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Ballz</title>
+	<link rel="stylesheet" type="text/css" href="style.css" />
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+	<script type="text/javascript" src="//code.jquery.com/jquery-1.9.1.js"></script>
+	<script type="text/javascript" src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+	<script type="text/javascript" src="j/three.min.js"></script>
+	<script type="text/javascript" src="j/csg.js"></script>
+	<script type="text/javascript" src="j/ThreeCSG.js"></script>
+	<script type="text/javascript" src="http://threejs.org/examples/js/controls/TrackballControls.js"></script>
+
+	<script type="text/javascript">
+
+	var WIDTH = 800,
+		HEIGHT = 600;
+
+	var VIEW_ANGLE = 45,
+		ASPECT = WIDTH/HEIGHT,
+		NEAR = 0.1,
+		FAR = 10000;
+
+	var Utils = {
+		deg2rad: function(degree) { return degree*(Math.PI/180); }
+	};
+
+	var App = function(options) {
+
+		var that = {
+			// Instance variables
+			$container: null,
+			renderer: null,
+			camera: null,
+			scene: null,
+
+			initialize: function(options) {
+				options = options || {};
+
+				this.$container = $(options.htmlContainer);
+
+				this.renderer = new THREE.WebGLRenderer();
+				this.renderer.setSize(WIDTH, HEIGHT);
+				this.$container.append(this.renderer.domElement);
+
+				this.scene = new THREE.Scene();
+
+				this.camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+
+				// The camera starts at 0,0,0 so pull it back
+				this.camera.position.z = 300;
+
+				// create a point light
+				this.pointLight = new THREE.PointLight(0xFFFFFF);
+				this.pointLight.position.x = 0;
+				this.pointLight.position.y = 50;
+				this.pointLight.position.z = 130;
+				this.scene.add(this.pointLight);
+
+				this.controls = new THREE.TrackballControls(this.camera);
+				var controls = this.controls;
+				// controls.enabled = false;
+				controls.rotateSpeed = 2.0;
+				controls.zoomSpeed = 1.2;
+				controls.panSpeed = 0.8;
+				controls.noZoom = true;
+				controls.noPan = true;
+				controls.staticMoving = true;
+				controls.dynamicDampingFactor = 0.3;
+				this.controls.addEventListener('change', _.bind(this.render, this));
+
+				this.material = new THREE.MeshNormalMaterial({
+					color: 'cyan'
+				});
+				var cubeGeometry = new THREE.CubeGeometry(100,100,100);
+				var cube = new THREE.Mesh(cubeGeometry, this.material);
+				this.redrawPiece(cube);
+				// var output = this.subtract(this.piece, cylinder);
+				// this.scene.add(cube);
+				// this.scene.add(cylinder);
+
+				this.animate();
+
+				var that = this;
+				this.$container.on('click', function(event) {
+					event.preventDefault();
+
+					var camera = that.camera;
+					var projector = new THREE.Projector();
+					var mouseX = (event.clientX / WIDTH) * 2 - 1,
+						mouseY = - (event.clientY / HEIGHT) * 2 + 1;
+					var vector = new THREE.Vector3(mouseX, mouseY, 0.5);
+					projector.unprojectVector(vector, camera);
+					var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+					var intersects = ray.intersectObjects([that.piece]);
+
+					if (intersects.length > 0) {
+						var i = intersects[0];
+						var pt = i.point;
+
+						var drill = that.drill($('#radius').val());
+						drill.position.x = pt.x;
+						drill.position.y = pt.y;
+						drill.position.z = pt.z;
+
+						var normal = i.face.normal;
+						/*
+							{{0, 0, 1},
+							 {0, 1, 0},
+							 {1, 0, 0}}
+						*/
+						var rot = new THREE.Vector3();
+						var m = new THREE.Matrix3(0, 0, 1, 0, 1, 0, 1, 0, 0);
+						drill.rotation = rot.copy(normal).applyMatrix3(m).multiplyScalar(Math.PI/2);
+						// console.log(normal.x, normal.y, normal.z);
+						// console.log(drill.rotation.x, drill.rotation.y, drill.rotation.z);
+
+						// var material = new THREE.LineBasicMaterial({
+						// 	color: 0x0000ff
+						// });
+						// var geometry = new THREE.Geometry();
+						// geometry.vertices.push(pt);
+						// geometry.vertices.push(pt.clone().add(normal.multiplyScalar(100)));
+						// var line = new THREE.Line(geometry, material);
+						// that.scene.add(line);
+
+						var output = that.subtract(that.piece, drill);
+						that.redrawPiece(output);
+					}
+
+				});
+
+				var material = new THREE.LineBasicMaterial({
+					color: 0xff00000
+				});
+				var geometry = new THREE.Geometry();
+				var line = new THREE.Line(geometry, material);
+				this.scene.add(line);
+				this.$container.on('mousemove', function(event) {
+					event.preventDefault();
+
+					var camera = that.camera;
+					var projector = new THREE.Projector();
+					var mouseX = (event.clientX / WIDTH) * 2 - 1,
+						mouseY = - (event.clientY / HEIGHT) * 2 + 1;
+					var vector = new THREE.Vector3(mouseX, mouseY, 0.5);
+					projector.unprojectVector(vector, camera);
+					var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+					var intersects = ray.intersectObjects([that.piece]);
+
+					if (intersects.length > 0) {
+						var i = intersects[0];
+						var pt = i.point;
+						var normal = i.face.normal;
+
+						line.visible = true;
+						geometry.verticesNeedUpdate = true;
+						geometry.vertices = [];
+						geometry.vertices.push(pt);
+						geometry.vertices.push(pt.clone().add(normal.clone().multiplyScalar(500)));
+
+					} else  {
+						line.visible = false;
+					}
+					that.render();
+
+				});
+			},
+
+			subtract: function(raw, cut) {
+				var rawBSP = new ThreeBSP(raw),
+					cutBSP = new ThreeBSP(cut);
+
+				var subtractBSP = rawBSP.subtract(cutBSP);
+				var result = subtractBSP.toMesh(raw.material);
+				result.geometry.computeVertexNormals();
+				return result;
+			},
+
+			render: function() {
+				// this.camera.position.x += 0.1;
+				// this.camera.position.y += 0.1;
+				// this.camera.lookAt(this.scene.position);
+				// requestAnimationFrame(_.bind(this.render, this));
+				this.renderer.render(this.scene, this.camera);
+			},
+
+			animate: function() {
+				requestAnimationFrame(_.bind(this.animate, this));
+				if (this.controls)
+					this.controls.update();
+				this.pointLight.position = this.camera.position;
+			},
+
+			redrawPiece: function(newPiece) {
+				if (this.piece)
+					this.scene.remove(this.piece);
+				this.piece = newPiece;
+				this.scene.add(this.piece);
+				this.render();
+			},
+
+			drill: function(size) {
+				var cylinderGeometry = new THREE.CylinderGeometry(size, size, 1000, 16, 16, false);
+				var cylinder = new THREE.Mesh(cylinderGeometry, this.material);
+				return cylinder;
+			},
+
+
+		};
+
+		that.initialize(options);
+		return that;
+	};
+
+	$(function() {
+		$("#slider").slider({
+			value: 5,
+			min: 2,
+			max: 20,
+			step: 1,
+			slide: function(event, ui) {
+				$('#radius').val(ui.value);
+			}
+		});
+		$('#radius').val($('#slider').slider('value'));
+
+		window.app = new App({
+			htmlContainer: '#container'
+		});
+	});
+
+	$(function() {
+		return;
+
+		var $container = $('#container');
+
+		var renderer = new THREE.WebGLRenderer();
+		renderer.setSize(WIDTH, HEIGHT);
+
+		var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+		var scene = new THREE.Scene();
+
+
+
+		$container.append(renderer.domElement);
+
+		var radius = 50,
+			segments = 16,
+			rings = 16;
+
+		var sphereMaterial = new THREE.MeshLambertMaterial({
+			color: 'cyan'
+		});
+		var sphereGeometry = new THREE.SphereGeometry(radius, segments, rings);
+		var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+		sphere.position.x = -30;
+		// scene.add(sphere);
+
+		var cubeGeometry = new THREE.CubeGeometry(100,100,100);
+		var material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
+		var cube = new THREE.Mesh(cubeGeometry, material);
+		cube.position.x = 0;
+		// scene.add(cube);
+
+		var NUM_SEGMENTS = 32;
+		var cylinderGeometry = new THREE.CylinderGeometry(15, 15, 100, NUM_SEGMENTS, segments, false);
+		var cylinder = new THREE.Mesh(cylinderGeometry, material);
+
+
+		var cubeBsp = new ThreeBSP(cube);
+		var sphereBsp = new ThreeBSP(sphere);
+		var cylinderBsp = new ThreeBSP(cylinder);
+		var subtractBsp = cubeBsp.subtract(cylinderBsp);
+		var result = subtractBsp.toMesh( new THREE.MeshLambertMaterial({color:'cyan'}));
+		result.geometry.computeVertexNormals();
+		scene.add(result);
+
+		$('#subtract').on('click', function(e) {
+			scene.remove(result);
+			var subtractBsp = cubeBsp.subtract(cylinderBsp);
+			result = subtractBsp.toMesh( new THREE.MeshLambertMaterial({color:'cyan'}));
+			result.geometry.computeVertexNormals();
+			scene.add(result);
+		});
+
+		$('#union').on('click', function(e) {
+			scene.remove(result);
+			var unionBsp = cubeBsp.union(sphereBsp);
+			result = unionBsp.toMesh( new THREE.MeshLambertMaterial({color:'green'}));
+			result.geometry.computeVertexNormals();
+			scene.add(result);
+		});
+
+		$('#intersect').on('click', function(e) {
+			scene.remove(result);
+			var intersectBSP = cubeBsp.intersect(sphereBsp);
+			result = intersectBSP.toMesh( new THREE.MeshLambertMaterial({color:'green'}));
+			result.geometry.computeVertexNormals();
+			scene.add(result);
+		});
+
+		// create a point light
+		var pointLight = new THREE.PointLight(0xFFFFFF);
+
+		// set its position
+		pointLight.position.x = 0;
+		pointLight.position.y = 50;
+		pointLight.position.z = 130;
+
+		// add to the scene
+		scene.add(pointLight);
+
+
+		result.rotation.x += 5;
+		result.rotation.y += 5;
+		result.rotation.z += 15;
+		// draw!
+		function render() {
+			camera.position.x += 0.5;
+			camera.position.y += 0.5;
+			camera.position.z += 0.5;
+			camera.lookAt( scene.position );
+			requestAnimationFrame(render);
+			renderer.render(scene, camera);
+		}
+		render();
+
+		var objects = [result];
+		var projector = new THREE.Projector();
+
+		material = new THREE.ParticleBasicMaterial( { size: 35, sizeAttenuation: false, transparent: true } );
+		material.color.setHSL( 1.0, 0.3, 0.7 );
+		var geometry = new THREE.Geometry();
+		var particles = new THREE.ParticleSystem(geometry, material);
+
+		// for ( i = 0; i < 100; i ++ ) {
+
+		// 			var vertex = new THREE.Vector3();
+		// 			vertex.x = 2000 * Math.random() - 1000;
+		// 			vertex.y = 2000 * Math.random() - 1000;
+		// 			vertex.z = 2000 * Math.random() - 1000;
+
+		// 			geometry.vertices.push( vertex );
+
+		// 		}
+
+		scene.add(particles);
+
+		$(document).on('click', function(event) {
+			event.preventDefault();
+			event.stopPropagation();
+
+			var vector = new THREE.Vector3(
+				(event.clientX / WIDTH) * 2 - 1,
+				- (event.clientY / HEIGHT) * 2 + 1,
+				0.5
+			);
+			projector.unprojectVector(vector, camera);
+
+			var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+
+			var intersects = ray.intersectObjects(objects);
+
+
+			if (intersects.length > 0) {
+
+				material = new THREE.ParticleBasicMaterial( { size: 4, sizeAttenuation: false, transparent: true } );
+				material.color.setHSL( 1.0, 1.0, 1.0);
+				var geometry = new THREE.Geometry();
+				var particles = new THREE.ParticleSystem(geometry, material);
+
+				var i = intersects[0];
+				// i.object.material.color.setHex(Math.random() * 0xffffff);
+
+				console.log(intersects[0]);
+				var vertex = new THREE.Vector3();
+				vertex.x = i.point.x ;
+				vertex.y = i.point.y ;
+				vertex.z = i.point.z ;
+				geometry.vertices.push(vertex);
+
+				scene.add(particles);
+
+				scene.remove(result);
+				var intersectBSP = cubeBsp.intersect(sphereBsp);
+				result = intersectBSP.toMesh( new THREE.MeshLambertMaterial({color:'green'}));
+				result.geometry.computeVertexNormals();
+				scene.add(result);
+			}
+		});
+
+	});
+
+	</script>
+</head>
+
+<body>
+
+	<div id="container"></div>
+
+	<label for="radius">
+		<input type="text" id="radius" style="border: 0; color: #f6931f; font-weight: bold;" />
+	</label>
+	<div id="slider"></div>
+
+<!-- 	<input type="button" value="Subtract" id="subtract" />&nbsp;
+	<input type="button" value="Union" id="union" />&nbsp;
+	<input type="button" value="Intersect" id="intersect" /> -->
+</body>
+
+</html>
