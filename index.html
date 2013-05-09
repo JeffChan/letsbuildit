@@ -99,11 +99,6 @@
 						var i = intersects[0];
 						var pt = i.point;
 
-						var drill = that.drill($('#radius').val() || 5);
-						drill.position.x = pt.x;
-						drill.position.y = pt.y;
-						drill.position.z = pt.z;
-
 						var normal = i.face.normal;
 						/*
 							{{0, 0, 1},
@@ -112,7 +107,14 @@
 						*/
 						var rot = new THREE.Vector3();
 						var m = new THREE.Matrix3(0, 0, 1, 0, 1, 0, 1, 0, 0);
-						drill.rotation = rot.copy(normal).applyMatrix3(m).multiplyScalar(Math.PI/2);
+						rot.copy(normal).applyMatrix3(m).multiplyScalar(Math.PI/2);
+
+						var drill = that.drill({
+							radius: $('#radius').val() || 5,
+							position: pt,
+							rotation: rot
+						});
+
 						// console.log(normal.x, normal.y, normal.z);
 						// console.log(drill.rotation.x, drill.rotation.y, drill.rotation.z);
 
@@ -206,9 +208,12 @@
 				this.render();
 			},
 
-			drill: function(size) {
+			drill: function(options) {
+				var size = options.radius;
 				var cylinderGeometry = new THREE.CylinderGeometry(size, size, 1000, 16, 16, false);
 				var cylinder = new THREE.Mesh(cylinderGeometry, this.material);
+				cylinder.rotation = options.rotation;
+				cylinder.position = options.position;
 				return cylinder;
 			},
 
