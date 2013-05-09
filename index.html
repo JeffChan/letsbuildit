@@ -16,11 +16,7 @@
 
 	<script type="text/javascript">
 
-	var WIDTH = 800,
-		HEIGHT = 600;
-
 	var VIEW_ANGLE = 45,
-		ASPECT = WIDTH/HEIGHT,
 		NEAR = 0.1,
 		FAR = 10000;
 
@@ -42,15 +38,18 @@
 			initialize: function(options) {
 				options = options || {};
 
+				this.HEIGHT = options.height;
+				this.WIDTH = options.width;
+
 				this.$container = $(options.htmlContainer);
 
 				this.renderer = new THREE.WebGLRenderer();
-				this.renderer.setSize(WIDTH, HEIGHT);
+				this.renderer.setSize(this.WIDTH, this.HEIGHT);
 				this.$container.append(this.renderer.domElement);
 
 				this.scene = new THREE.Scene();
 
-				this.camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+				this.camera = new THREE.PerspectiveCamera(VIEW_ANGLE, this.WIDTH/this.HEIGHT, NEAR, FAR);
 
 				// The camera starts at 0,0,0 so pull it back
 				this.camera.position.z = 300;
@@ -89,8 +88,8 @@
 
 					var camera = that.camera;
 					var projector = new THREE.Projector();
-					var mouseX = (event.clientX / WIDTH) * 2 - 1,
-						mouseY = - (event.clientY / HEIGHT) * 2 + 1;
+					var mouseX = (event.clientX / that.WIDTH) * 2 - 1,
+						mouseY = - (event.clientY / that.HEIGHT) * 2 + 1;
 					var vector = new THREE.Vector3(mouseX, mouseY, 0.5);
 					projector.unprojectVector(vector, camera);
 					var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
@@ -148,8 +147,8 @@
 
 					var camera = that.camera;
 					var projector = new THREE.Projector();
-					var mouseX = (event.clientX / WIDTH) * 2 - 1,
-						mouseY = - (event.clientY / HEIGHT) * 2 + 1;
+					var mouseX = (event.clientX / that.WIDTH) * 2 - 1,
+						mouseY = - (event.clientY / that.HEIGHT) * 2 + 1;
 					var vector = new THREE.Vector3(mouseX, mouseY, 0.5);
 					projector.unprojectVector(vector, camera);
 					var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
@@ -213,11 +212,21 @@
 				return cylinder;
 			},
 
-			export: function() {
-				var exp = (new THREE.GeometryExporter()).parse(this.piece.geometry);
-				var blob = new Blob([JSON.stringify(exp)], {type: "text/plain;charset=utf-8"});
-				var name = prompt('What would you like to name this file?');
-				saveAs(blob, name+'.json');
+			export: function(download) {
+				var obj = (new THREE.GeometryExporter()).parse(this.piece.geometry);
+				var json = JSON.stringify(obj);
+				if (download === true) {
+					var blob = new Blob([json], {type: "text/plain;charset=utf-8"});
+					var name = prompt('What would you like to name this file?');
+					saveAs(blob, name+'.json');
+				}
+				return json;
+			},
+
+			import: function(json) {
+				var parsed = (new THREE.JSONLoader()).parse(JSON.parse(json));
+				var mesh = new THREE.Mesh(parsed.geometry, this.material);
+				return mesh;
 			}
 		};
 
@@ -238,12 +247,29 @@
 		// $('#radius').val($('#slider').slider('value'));
 
 		window.app = new App({
-			htmlContainer: '#container'
+			htmlContainer: '#container',
+			width: 800,
+			height: 600
 		});
 
+		window.demo = new App({
+			htmlContainer: '#demo',
+			width: 400,
+			height: 300
+		});
 		$('#export').on('click', function(e) {
 			e.preventDefault();
-			app.export();
+			app.export(true);
+		});
+		$('#file').on('change', function(e) {
+			var file = e.target.files[0];
+			var reader = new FileReader();
+			reader.onload = (function(theFile) {
+				return function(e) {
+					demo.redrawPiece(demo.import(e.target.result));
+				}
+			})(file);
+			reader.readAsText(file);
 		});
 	});
 
@@ -254,12 +280,17 @@
 
 	<div id="container"></div>
 
+	<div id="demo"></div>
+
 	<label for="radius">
 		<input type="text" id="radius" style="border: 0; color: #f6931f; font-weight: bold;" />
 	</label>
 	<div id="slider"></div>
 
-	<input type="button" value="Export" id="export" />
+	<input type="button" value="Export" id="export" /><br/><br/>
+	<strong>Import:</strong> <input type="file" id="file" />
+	<!-- <input type="button" value="Import" id="export" /> -->
+	<!-- <textarea id="import"></textarea> -->
 </body>
 
 </html>

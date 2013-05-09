@@ -3,6 +3,20 @@ body {
     padding: 0;
 }
 
+#container {
+	float: left;
+}
+
 #container canvas {
 	border: 1px solid cyan;
+}
+
+#demo {
+	float: right;
+	width: 400px;
+	border: 1px solid cyan;
+}
+
+#demo canvas {
+	/*border: 1px solid cyan;*/
 }
