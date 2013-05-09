@@ -11,6 +11,7 @@
 	<script type="text/javascript" src="j/csg.js"></script>
 	<script type="text/javascript" src="j/ThreeCSG.js"></script>
 	<script type="text/javascript" src="http://threejs.org/examples/js/controls/TrackballControls.js"></script>
+	<script type="text/javascript" src="j/GeometryExporter.js"></script>
 
 	<script type="text/javascript">
 
@@ -25,6 +26,8 @@
 	var Utils = {
 		deg2rad: function(degree) { return degree*(Math.PI/180); }
 	};
+
+	var Exporter = new THREE.GeometryExporter();
 
 	var App = function(options) {
 
@@ -127,6 +130,10 @@
 
 						var output = that.subtract(that.piece, drill);
 						that.redrawPiece(output);
+
+						console.log(Exporter.parse(output.geometry));
+
+						// THREE.GeometryLoader.
 					}
 
 				});
@@ -135,8 +142,13 @@
 					color: 0xff00000
 				});
 				var geometry = new THREE.Geometry();
+				geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+				geometry.vertices.push(new THREE.Vector3(0, 0, 1));
+
 				var line = new THREE.Line(geometry, material);
+				line.visible = false;
 				this.scene.add(line);
+
 				this.$container.on('mousemove', function(event) {
 					event.preventDefault();
 
@@ -229,168 +241,6 @@
 		window.app = new App({
 			htmlContainer: '#container'
 		});
-	});
-
-	$(function() {
-		return;
-
-		var $container = $('#container');
-
-		var renderer = new THREE.WebGLRenderer();
-		renderer.setSize(WIDTH, HEIGHT);
-
-		var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-		var scene = new THREE.Scene();
-
-
-
-		$container.append(renderer.domElement);
-
-		var radius = 50,
-			segments = 16,
-			rings = 16;
-
-		var sphereMaterial = new THREE.MeshLambertMaterial({
-			color: 'cyan'
-		});
-		var sphereGeometry = new THREE.SphereGeometry(radius, segments, rings);
-		var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-		sphere.position.x = -30;
-		// scene.add(sphere);
-
-		var cubeGeometry = new THREE.CubeGeometry(100,100,100);
-		var material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
-		var cube = new THREE.Mesh(cubeGeometry, material);
-		cube.position.x = 0;
-		// scene.add(cube);
-
-		var NUM_SEGMENTS = 32;
-		var cylinderGeometry = new THREE.CylinderGeometry(15, 15, 100, NUM_SEGMENTS, segments, false);
-		var cylinder = new THREE.Mesh(cylinderGeometry, material);
-
-
-		var cubeBsp = new ThreeBSP(cube);
-		var sphereBsp = new ThreeBSP(sphere);
-		var cylinderBsp = new ThreeBSP(cylinder);
-		var subtractBsp = cubeBsp.subtract(cylinderBsp);
-		var result = subtractBsp.toMesh( new THREE.MeshLambertMaterial({color:'cyan'}));
-		result.geometry.computeVertexNormals();
-		scene.add(result);
-
-		$('#subtract').on('click', function(e) {
-			scene.remove(result);
-			var subtractBsp = cubeBsp.subtract(cylinderBsp);
-			result = subtractBsp.toMesh( new THREE.MeshLambertMaterial({color:'cyan'}));
-			result.geometry.computeVertexNormals();
-			scene.add(result);
-		});
-
-		$('#union').on('click', function(e) {
-			scene.remove(result);
-			var unionBsp = cubeBsp.union(sphereBsp);
-			result = unionBsp.toMesh( new THREE.MeshLambertMaterial({color:'green'}));
-			result.geometry.computeVertexNormals();
-			scene.add(result);
-		});
-
-		$('#intersect').on('click', function(e) {
-			scene.remove(result);
-			var intersectBSP = cubeBsp.intersect(sphereBsp);
-			result = intersectBSP.toMesh( new THREE.MeshLambertMaterial({color:'green'}));
-			result.geometry.computeVertexNormals();
-			scene.add(result);
-		});
-
-		// create a point light
-		var pointLight = new THREE.PointLight(0xFFFFFF);
-
-		// set its position
-		pointLight.position.x = 0;
-		pointLight.position.y = 50;
-		pointLight.position.z = 130;
-
-		// add to the scene
-		scene.add(pointLight);
-
-
-		result.rotation.x += 5;
-		result.rotation.y += 5;
-		result.rotation.z += 15;
-		// draw!
-		function render() {
-			camera.position.x += 0.5;
-			camera.position.y += 0.5;
-			camera.position.z += 0.5;
-			camera.lookAt( scene.position );
-			requestAnimationFrame(render);
-			renderer.render(scene, camera);
-		}
-		render();
-
-		var objects = [result];
-		var projector = new THREE.Projector();
-
-		material = new THREE.ParticleBasicMaterial( { size: 35, sizeAttenuation: false, transparent: true } );
-		material.color.setHSL( 1.0, 0.3, 0.7 );
-		var geometry = new THREE.Geometry();
-		var particles = new THREE.ParticleSystem(geometry, material);
-
-		// for ( i = 0; i < 100; i ++ ) {
-
-		// 			var vertex = new THREE.Vector3();
-		// 			vertex.x = 2000 * Math.random() - 1000;
-		// 			vertex.y = 2000 * Math.random() - 1000;
-		// 			vertex.z = 2000 * Math.random() - 1000;
-
-		// 			geometry.vertices.push( vertex );
-
-		// 		}
-
-		scene.add(particles);
-
-		$(document).on('click', function(event) {
-			event.preventDefault();
-			event.stopPropagation();
-
-			var vector = new THREE.Vector3(
-				(event.clientX / WIDTH) * 2 - 1,
-				- (event.clientY / HEIGHT) * 2 + 1,
-				0.5
-			);
-			projector.unprojectVector(vector, camera);
-
-			var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
-
-			var intersects = ray.intersectObjects(objects);
-
-
-			if (intersects.length > 0) {
-
-				material = new THREE.ParticleBasicMaterial( { size: 4, sizeAttenuation: false, transparent: true } );
-				material.color.setHSL( 1.0, 1.0, 1.0);
-				var geometry = new THREE.Geometry();
-				var particles = new THREE.ParticleSystem(geometry, material);
-
-				var i = intersects[0];
-				// i.object.material.color.setHex(Math.random() * 0xffffff);
-
-				console.log(intersects[0]);
-				var vertex = new THREE.Vector3();
-				vertex.x = i.point.x ;
-				vertex.y = i.point.y ;
-				vertex.z = i.point.z ;
-				geometry.vertices.push(vertex);
-
-				scene.add(particles);
-
-				scene.remove(result);
-				var intersectBSP = cubeBsp.intersect(sphereBsp);
-				result = intersectBSP.toMesh( new THREE.MeshLambertMaterial({color:'green'}));
-				result.geometry.computeVertexNormals();
-				scene.add(result);
-			}
-		});
-
 	});
 
 	</script>
