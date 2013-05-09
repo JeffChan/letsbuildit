@@ -34,6 +34,7 @@
 			renderer: null,
 			camera: null,
 			scene: null,
+			mode: 'mill',
 
 			initialize: function(options) {
 				options = options || {};
@@ -43,7 +44,7 @@
 
 				this.$container = $(options.htmlContainer);
 
-				this.renderer = new THREE.WebGLRenderer();
+				this.renderer = new THREE.WebGLRenderer({ antialias: true });
 				this.renderer.setSize(this.WIDTH, this.HEIGHT);
 				this.$container.append(this.renderer.domElement);
 
@@ -98,37 +99,41 @@
 					if (intersects.length > 0) {
 						var i = intersects[0];
 						var pt = i.point;
-
 						var normal = i.face.normal;
-						/*
-							{{0, 0, 1},
-							 {0, 1, 0},
-							 {1, 0, 0}}
-						*/
+
 						var rot = new THREE.Vector3();
 						var m = new THREE.Matrix3(0, 0, 1, 0, 1, 0, 1, 0, 0);
 						rot.copy(normal).applyMatrix3(m).multiplyScalar(Math.PI/2);
+						switch (that.mode) {
+							case 'drill':
+								/*
+									{{0, 0, 1},
+									 {0, 1, 0},
+									 {1, 0, 0}}
+								*/
 
-						var drill = that.drill({
-							radius: $('#radius').val() || 5,
-							position: pt,
-							rotation: rot
-						});
+								var output = that.subtract(that.piece, that.drill({
+									radius: $('#radius').val() || 5,
+									position: pt,
+									rotation: rot
+								}));
+								that.redrawPiece(output);
+								break;
 
-						// console.log(normal.x, normal.y, normal.z);
-						// console.log(drill.rotation.x, drill.rotation.y, drill.rotation.z);
+							default:
+							case 'mill':
+								var mill = that.mill({
+									width: 30,
+									length: 10,
+									depth: 5,
+									position: pt,
+									rotation: rot
+								});
+								var output = that.subtract(that.piece, mill);
+								that.redrawPiece(output);
+								break;
+						}
 
-						// var material = new THREE.LineBasicMaterial({
-						// 	color: 0x0000ff
-						// });
-						// var geometry = new THREE.Geometry();
-						// geometry.vertices.push(pt);
-						// geometry.vertices.push(pt.clone().add(normal.multiplyScalar(100)));
-						// var line = new THREE.Line(geometry, material);
-						// that.scene.add(line);
-
-						var output = that.subtract(that.piece, drill);
-						that.redrawPiece(output);
 					}
 
 				});
@@ -164,7 +169,7 @@
 						line.visible = true;
 						geometry.verticesNeedUpdate = true;
 						geometry.vertices = [];
-						geometry.vertices.push(pt);
+						geometry.vertices.push(pt.clone().add(normal.clone().multiplyScalar(-500)));
 						geometry.vertices.push(pt.clone().add(normal.clone().multiplyScalar(500)));
 
 					} else  {
@@ -217,6 +222,14 @@
 				return cylinder;
 			},
 
+			mill: function(options) {
+				var cubeGeometry = new THREE.CubeGeometry(options.width,options.length,options.depth);
+				var cube = new THREE.Mesh(cubeGeometry, this.material);
+				cube.rotation = options.rotation;
+				cube.position = options.position;
+				return cube;
+			},
+
 			export: function(download) {
 				var obj = (new THREE.GeometryExporter()).parse(this.piece.geometry);
 				var json = JSON.stringify(obj);
@@ -232,6 +245,10 @@
 				var parsed = (new THREE.JSONLoader()).parse(JSON.parse(json));
 				var mesh = new THREE.Mesh(parsed.geometry, this.material);
 				return mesh;
+			},
+
+			setMode: function(mode) {
+				this.mode = mode;
 			}
 		};
 
@@ -276,6 +293,12 @@
 			})(file);
 			reader.readAsText(file);
 		});
+
+		$('#mill, #drill').on('click', function(e) {
+			var tool = $(e.target);
+			$('#tool').text(tool.val());
+			app.setMode(tool.attr('id'));
+		});
 	});
 
 	</script>
@@ -294,7 +317,11 @@
 
 	<input type="button" value="Export" id="export" /><br/><br/>
 	<strong>Import:</strong> <input type="file" id="file" />
-	<!-- <input type="button" value="Import" id="export" /> -->
+
+	<br/><br/>
+	<strong>Current:</strong> <span id="tool">Mill</span>
+	<input type="button" value="Mill" id="mill" />
+	<input type="button" value="Drill Press" id="drill" />
 	<!-- <textarea id="import"></textarea> -->
 </body>
 
