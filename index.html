@@ -12,6 +12,7 @@
 	<script type="text/javascript" src="j/ThreeCSG.js"></script>
 	<script type="text/javascript" src="http://threejs.org/examples/js/controls/TrackballControls.js"></script>
 	<script type="text/javascript" src="j/GeometryExporter.js"></script>
+	<script type="text/javascript" src="j/FileSaver.min.js"></script>
 
 	<script type="text/javascript">
 
@@ -102,7 +103,7 @@
 						var i = intersects[0];
 						var pt = i.point;
 
-						var drill = that.drill($('#radius').val());
+						var drill = that.drill($('#radius').val() || 5);
 						drill.position.x = pt.x;
 						drill.position.y = pt.y;
 						drill.position.z = pt.z;
@@ -130,10 +131,6 @@
 
 						var output = that.subtract(that.piece, drill);
 						that.redrawPiece(output);
-
-						console.log(Exporter.parse(output.geometry));
-
-						// THREE.GeometryLoader.
 					}
 
 				});
@@ -219,7 +216,12 @@
 				return cylinder;
 			},
 
-
+			export: function() {
+				var exp = (new THREE.GeometryExporter()).parse(this.piece.geometry);
+				var blob = new Blob([JSON.stringify(exp)], {type: "text/plain;charset=utf-8"});
+				var name = prompt('What would you like to name this file?');
+				saveAs(blob, name+'.json');
+			}
 		};
 
 		that.initialize(options);
@@ -227,19 +229,24 @@
 	};
 
 	$(function() {
-		$("#slider").slider({
-			value: 5,
-			min: 2,
-			max: 20,
-			step: 1,
-			slide: function(event, ui) {
-				$('#radius').val(ui.value);
-			}
-		});
-		$('#radius').val($('#slider').slider('value'));
+		// $("#slider").slider({
+		// 	value: 5,
+		// 	min: 2,
+		// 	max: 20,
+		// 	step: 1,
+		// 	slide: function(event, ui) {
+		// 		$('#radius').val(ui.value);
+		// 	}
+		// });
+		// $('#radius').val($('#slider').slider('value'));
 
 		window.app = new App({
 			htmlContainer: '#container'
+		});
+
+		$('#export').on('click', function(e) {
+			e.preventDefault();
+			app.export();
 		});
 	});
 
@@ -254,6 +261,8 @@
 		<input type="text" id="radius" style="border: 0; color: #f6931f; font-weight: bold;" />
 	</label>
 	<div id="slider"></div>
+
+	<input type="button" value="Export" id="export" />
 
 <!-- 	<input type="button" value="Subtract" id="subtract" />&nbsp;
 	<input type="button" value="Union" id="union" />&nbsp;
