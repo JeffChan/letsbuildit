@@ -80,9 +80,6 @@
 				var cubeGeometry = new THREE.CubeGeometry(100,100,100);
 				var cube = new THREE.Mesh(cubeGeometry, this.material);
 				this.redrawPiece(cube);
-				// var output = this.subtract(this.piece, cylinder);
-				// this.scene.add(cube);
-				// this.scene.add(cylinder);
 
 				this.animate();
 
@@ -263,10 +260,6 @@
 	<div id="slider"></div>
 
 	<input type="button" value="Export" id="export" />
-
-<!-- 	<input type="button" value="Subtract" id="subtract" />&nbsp;
-	<input type="button" value="Union" id="union" />&nbsp;
-	<input type="button" value="Intersect" id="intersect" /> -->
 </body>
 
 </html>
