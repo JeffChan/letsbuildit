@@ -75,7 +75,7 @@
 			scene: null,
 			mode: 'mill',
 
-			radius: 0,
+			radius: 5,
 
 			initialize: function(options) {
 				options = options || {};
@@ -123,6 +123,10 @@
 				// cube.position.set(size/2, size/2, 0);
 				this.redrawPiece(cube);
 
+				this.fake = new THREE.Mesh(cubeGeometry, this.material);
+				this.fake.visible = false;
+				this.scene.add(this.fake);
+
 				this.animate(); // Begin animation loop
 				var highlighted = null;
 
@@ -137,7 +141,7 @@
 					var vector = new THREE.Vector3(mouseX, mouseY, 0.5);
 					projector.unprojectVector(vector, camera);
 					var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
-					var intersects = ray.intersectObjects([that.piece]);
+					var intersects = ray.intersectObjects([that.fake]);
 
 					if (intersects.length == 0) {
 						if (highlighted) {
@@ -161,7 +165,7 @@
 						case 'drill':
 
 							var output = that.subtract(that.piece, that.drill({
-								radius: that.radius || 5,
+								radius: that.radius,
 								position: pt,
 								depth: 1000,
 								normal: normal
@@ -185,7 +189,7 @@
 								var mill = that.mill({
 									start: startPt,
 									end: pt,
-									length: that.radius || 10,
+									length: that.radius*2,
 									depth: 30,
 									normal: normal
 								});
@@ -197,7 +201,9 @@
 
 							} else {
 								// var x = that.cross({color: 0xff0000});
-								var x = that.circle();
+								var x = that.circle({
+									radius: that.radius
+								});
 								x.position = pt.clone().add(normal.clone().multiplyScalar(OFFSET)); // offset so the cross shows up
 								x.rotation = normal.clone().applyMatrix3(Utils.YXZMatrix).multiplyScalar(Math.PI/2);
 								that.scene.add(x);
@@ -234,7 +240,7 @@
 					var vector = new THREE.Vector3(mouseX, mouseY, 0.5);
 					projector.unprojectVector(vector, camera);
 					var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
-					var intersects = ray.intersectObjects([that.piece]);
+					var intersects = ray.intersectObjects([that.fake]);
 
 					that.scene.remove(circle);
 
@@ -442,6 +448,10 @@
 
 			},
 
+			saw: function() {
+
+			},
+
 			export: function(download) {
 				var obj = (new THREE.GeometryExporter()).parse(this.piece.geometry);
 				var json = JSON.stringify(obj);
@@ -513,6 +523,7 @@
 			}
 		});
 		$('#radius').val($('#slider').slider('value'));
+		app.radius = $('#radius').val();
 	});
 
 	</script>

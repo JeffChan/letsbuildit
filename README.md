@@ -5,20 +5,11 @@
 - show grid
 
 ## Bugs
-- shouldn't be able to drill into weird places
 - change to keyboard scroll
-- cant drill over small hole
 
 ## MAYBE
 - use Require.js to load JS files
 - use backbone.js
-
-
-
-
-
-
-
 
 
 // var mapB = THREE.ImageUtils.loadTexture( "t/circle.png" );
@@ -31,4 +22,3 @@
 // that.scene.add(sprite);
 // var output = that.subtract(that.piece, mill);
 // that.redrawPiece(output);
-
