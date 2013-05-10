@@ -22,6 +22,16 @@
 		OFFSET = 0.05;
 
 	var Utils = {
+
+		clickToRay: function(x, y, width, height, camera) {
+			var projector = new THREE.Projector();
+			var mouseX = (x / width) * 2 - 1,
+				mouseY = - (y / height) * 2 + 1;
+			var vector = new THREE.Vector3(mouseX, mouseY, 0.5);
+			projector.unprojectVector(vector, camera);
+			return new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+		},
+
 		deg2rad: function(degree) { return degree*(Math.PI/180); },
 
 		getPMatrix: function(v) {
@@ -94,7 +104,7 @@
 				this.camera = new THREE.PerspectiveCamera(VIEW_ANGLE, this.WIDTH/this.HEIGHT, NEAR, FAR);
 
 				// The camera starts at 0,0,0 so pull it back
-				this.camera.position.z = 300;
+				this.camera.position.z = 250;
 
 				// create a point light
 				this.pointLight = new THREE.PointLight(0xFFFFFF);
@@ -123,7 +133,7 @@
 				// cube.position.set(size/2, size/2, 0);
 				this.redrawPiece(cube);
 
-				this.fake = new THREE.Mesh(cubeGeometry, this.material);
+				this.fake = cube.clone();
 				this.fake.visible = false;
 				this.scene.add(this.fake);
 
@@ -134,13 +144,7 @@
 				this.$container.on('click', function(event) {
 					event.preventDefault();
 
-					var camera = that.camera;
-					var projector = new THREE.Projector();
-					var mouseX = (event.clientX / that.WIDTH) * 2 - 1,
-						mouseY = - (event.clientY / that.HEIGHT) * 2 + 1;
-					var vector = new THREE.Vector3(mouseX, mouseY, 0.5);
-					projector.unprojectVector(vector, camera);
-					var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+					var ray = Utils.clickToRay(event.clientX, event.clientY, that.WIDTH, that.HEIGHT, that.camera);
 					var intersects = ray.intersectObjects([that.fake]);
 
 					if (intersects.length == 0) {
@@ -221,10 +225,11 @@
 				var geometry = new THREE.Geometry();
 				geometry.vertices = [ new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 1)];
 
-				var lineMaterial = new THREE.LineBasicMaterial({
-					color: 0xff0000
+				var redLineMaterial = new THREE.LineBasicMaterial({
+					color: 0xff0000,
+					linewidth: 2
 				});
-				var line = new THREE.Line(geometry, lineMaterial);
+				var line = new THREE.Line(geometry, redLineMaterial);
 				line.visible = false;
 				this.scene.add(line);
 
@@ -233,13 +238,7 @@
 				this.$container.on('mousemove', function(event) {
 					event.preventDefault();
 
-					var camera = that.camera;
-					var projector = new THREE.Projector();
-					var mouseX = (event.clientX / that.WIDTH) * 2 - 1,
-						mouseY = - (event.clientY / that.HEIGHT) * 2 + 1;
-					var vector = new THREE.Vector3(mouseX, mouseY, 0.5);
-					projector.unprojectVector(vector, camera);
-					var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+					var ray = Utils.clickToRay(event.clientX, event.clientY, that.WIDTH, that.HEIGHT, that.camera);
 					var intersects = ray.intersectObjects([that.fake]);
 
 					that.scene.remove(circle);
