@@ -51,6 +51,11 @@
 					(v.x == 1 && v.y == 0 && v.z == 0);
 		},
 
+		iNormal: function(v) {
+			v = Utils.map(v, Math.abs);
+			return (new THREE.Vector3(1,1,1)).sub(v);
+		},
+
 		XYZMatrix: new THREE.Matrix3(1, 0, 0, 0, 1, 0, 0, 0, 1),
 		XZYMatrix: new THREE.Matrix3(1, 0, 0, 0, 0, 1, 0, 1, 0),
 		YXZMatrix: new THREE.Matrix3(0, 1, 0, 1, 0, 0, 0, 0, 1),
@@ -343,6 +348,10 @@
 				var start = options.start,
 					end = options.end,
 					normal = options.normal;
+
+				if (start.equals(end)) {
+					end = start.clone().add(Utils.iNormal(normal).multiplyScalar(0.05));
+				}
 
 				var l1 = Utils.getProjection(start, normal);
 				var l2 = Utils.getProjection(end, normal);
