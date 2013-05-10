@@ -1,22 +1,31 @@
 body {
     margin: 0;
     padding: 0;
+    font-family: Helvetica;
+}
+
+canvas {
+	cursor: crosshair;
+	border: 1px solid cyan;
 }
 
 #container {
 	float: left;
 }
 
-#container canvas {
-	border: 1px solid cyan;
-}
-
 #demo {
 	float: right;
 	width: 400px;
-	border: 1px solid cyan;
 }
 
-#demo canvas {
-	/*border: 1px solid cyan;*/
+.clear {
+	clear: both;
+}
+
+.imex {
+	float: left;
+}
+
+.mode {
+	float: left;
 }
