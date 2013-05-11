@@ -147,56 +147,56 @@ var App = function(options) {
 			}
 
 			switch (that.mode) {
-				case 'drill':
+			case 'drill':
 
-					var output = that.subtract(that.piece, that.drill({
-						radius: that.radius,
-						position: pt,
-						depth: 1000,
-						normal: normal
-					}));
-					that.redrawPiece(output);
-					break;
+				var output = that.subtract(that.piece, that.drill({
+					radius: that.radius,
+					position: pt,
+					depth: 1000,
+					normal: normal
+				}));
+				that.redrawPiece(output);
+				break;
 
-				case 'mill':
+			case 'mill':
 
-					if (highlighted) {
-						var startPt = highlighted.position.sub(normal.clone().multiplyScalar(OFFSET)); // reverse the offset
+				if (highlighted) {
+					var startPt = highlighted.position.sub(normal.clone().multiplyScalar(OFFSET)); // reverse the offset
 
-						that.scene.remove(highlighted);
-						highlighted = null;
+					that.scene.remove(highlighted);
+					highlighted = null;
 
-						if (!highlightedNormal.equals(normal)) {
-							break;
-						}
-
-						var mill = that.mill({
-							start: startPt,
-							end: pt,
-							length: that.radius*2,
-							depth: 30,
-							normal: normal
-						});
-
-						if (mill) {
-							var output = that.subtract(that.piece, mill);
-							that.redrawPiece(output);
-						}
-
-					} else {
-						// var x = that.cross({color: 0xff0000});
-						var x = that.circle({
-							radius: that.radius
-						});
-						x.position = pt.clone().add(normal.clone().multiplyScalar(OFFSET)); // offset so the cross shows up
-						x.rotation = normal.clone().applyMatrix3(Utils.YXZMatrix).multiplyScalar(Math.PI/2);
-						that.scene.add(x);
-						that.render();
-						highlighted = x;
-						highlightedNormal = normal;
+					if (!highlightedNormal.equals(normal)) {
+						break;
 					}
 
-					break;
+					var mill = that.mill({
+						start: startPt,
+						end: pt,
+						length: that.radius*2,
+						depth: 30,
+						normal: normal
+					});
+
+					if (mill) {
+						var output = that.subtract(that.piece, mill);
+						that.redrawPiece(output);
+					}
+
+				} else {
+					// var x = that.cross({color: 0xff0000});
+					var x = that.circle({
+						radius: that.radius
+					});
+					x.position = pt.clone().add(normal.clone().multiplyScalar(OFFSET)); // offset so the cross shows up
+					x.rotation = normal.clone().applyMatrix3(Utils.YXZMatrix).multiplyScalar(Math.PI/2);
+					that.scene.add(x);
+					that.render();
+					highlighted = x;
+					highlightedNormal = normal;
+				}
+
+				break;
 			}
 
 		});
@@ -232,34 +232,34 @@ var App = function(options) {
 			}
 
 			switch (that.mode) {
-				case 'drill':
+			case 'drill':
+				line.visible = true;
+				line.geometry.verticesNeedUpdate = true;
+				line.geometry.vertices = [
+					pt.clone().add(normal.clone().multiplyScalar(-500)),
+					pt.clone().add(normal.clone().multiplyScalar(500))
+				];
+
+				circle = that.circle({
+					radius: that.radius
+				});
+				circle.position = pt.clone().add(normal.clone().multiplyScalar(OFFSET));
+				circle.rotation = normal.clone().applyMatrix3(Utils.YXZMatrix).multiplyScalar(Math.PI/2);
+				that.scene.add(circle);
+				break;
+
+			case 'mill':
+				if (highlighted) {
+					var startPt = highlighted.position;
 					line.visible = true;
 					line.geometry.verticesNeedUpdate = true;
 					line.geometry.vertices = [
-						pt.clone().add(normal.clone().multiplyScalar(-500)),
-						pt.clone().add(normal.clone().multiplyScalar(500))
+						startPt.clone().add(normal.clone().multiplyScalar(0.05)),
+						pt.clone().add(normal.clone().multiplyScalar(0.05))
 					];
+				}
 
-					circle = that.circle({
-						radius: that.radius
-					});
-					circle.position = pt.clone().add(normal.clone().multiplyScalar(OFFSET));
-					circle.rotation = normal.clone().applyMatrix3(Utils.YXZMatrix).multiplyScalar(Math.PI/2);
-					that.scene.add(circle);
-					break;
-
-				case 'mill':
-					if (highlighted) {
-						var startPt = highlighted.position;
-						line.visible = true;
-						line.geometry.verticesNeedUpdate = true;
-						line.geometry.vertices = [
-							startPt.clone().add(normal.clone().multiplyScalar(0.05)),
-							pt.clone().add(normal.clone().multiplyScalar(0.05))
-						];
-					}
-
-					break;
+				break;
 			}
 
 			that.render();
