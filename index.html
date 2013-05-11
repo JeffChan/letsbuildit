@@ -140,7 +140,6 @@
 				this.animate(); // Begin animation loop
 				var highlighted = null;
 
-				var that = this;
 				this.$container.on('click', function(event) {
 					event.preventDefault();
 
@@ -177,7 +176,6 @@
 							that.redrawPiece(output);
 							break;
 
-						default:
 						case 'mill':
 
 							if (highlighted) {
@@ -222,14 +220,7 @@
 				});
 
 
-				var geometry = new THREE.Geometry();
-				geometry.vertices = [ new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 1)];
-
-				var redLineMaterial = new THREE.LineBasicMaterial({
-					color: 0xff0000,
-					linewidth: 2
-				});
-				var line = new THREE.Line(geometry, redLineMaterial);
+				var line = this.line();
 				line.visible = false;
 				this.scene.add(line);
 
@@ -256,8 +247,8 @@
 						switch (that.mode) {
 							case 'drill':
 								line.visible = true;
-								geometry.verticesNeedUpdate = true;
-								geometry.vertices = [
+								line.geometry.verticesNeedUpdate = true;
+								line.geometry.vertices = [
 									pt.clone().add(normal.clone().multiplyScalar(-500)),
 									pt.clone().add(normal.clone().multiplyScalar(500))
 								];
@@ -274,8 +265,8 @@
 								if (highlighted) {
 									var startPt = highlighted.position;
 									line.visible = true;
-									geometry.verticesNeedUpdate = true;
-									geometry.vertices = [
+									line.geometry.verticesNeedUpdate = true;
+									line.geometry.vertices = [
 										startPt.clone().add(normal.clone().multiplyScalar(0.05)),
 										pt.clone().add(normal.clone().multiplyScalar(0.05))
 									];
@@ -336,6 +327,20 @@
 				this.piece = newPiece;
 				this.scene.add(this.piece);
 				this.render();
+			},
+
+			line: function(options) {
+				options = options || {};
+				var vertices = options.vertices || [new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 1)];
+
+				var geometry = new THREE.Geometry();
+				geometry.vertices = vertices;
+
+				var redLineMaterial = new THREE.LineBasicMaterial({
+					color: options.color || 0xff0000,
+					linewidth: options.width || 2
+				});
+				return new THREE.Line(geometry, redLineMaterial);
 			},
 
 			cross: function(options) {
