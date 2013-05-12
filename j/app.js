@@ -49,12 +49,25 @@ var Utils = {
 		return (new THREE.Vector3(1,1,1)).sub(v);
 	},
 
-	XYZMatrix: new THREE.Matrix3(1, 0, 0, 0, 1, 0, 0, 0, 1),
-	XZYMatrix: new THREE.Matrix3(1, 0, 0, 0, 0, 1, 0, 1, 0),
-	YXZMatrix: new THREE.Matrix3(0, 1, 0, 1, 0, 0, 0, 0, 1),
-	ZYXMatrix: new THREE.Matrix3(0, 0, 1, 0, 1, 0, 1, 0, 0),
+	XYZMatrix: function() {
+		return new THREE.Matrix3(1, 0, 0, 0, 1, 0, 0, 0, 1);
+	},
 
+	XZYMatrix: function() {
+		return new THREE.Matrix3(1, 0, 0, 0, 0, 1, 0, 1, 0);
+	},
 
+	YXZMatrix: function() {
+		return new THREE.Matrix3(0, 1, 0, 1, 0, 0, 0, 0, 1);
+	},
+
+	ZYXMatrix: function() {
+		return new THREE.Matrix3(0, 0, 1, 0, 1, 0, 1, 0, 0);
+	},
+
+	XYZNormals: function() {
+		return [ new THREE.Vector3(1,0,0), new THREE.Vector3(0,1,0), new THREE.Vector3(0,0,1) ];
+	}
 };
 
 var App = function(options) {
@@ -119,8 +132,16 @@ var App = function(options) {
 		this.fake.visible = false;
 		this.scene.add(this.fake);
 
+		this.grid = this.generateGrid(size);
+		this.scene.add(this.grid);
+
 		this.animate(); // Begin animation loop
+
 		var highlighted = null;
+		var line = this.line();
+		line.visible = false;
+		this.scene.add(line);
+		var circle = this.circle();
 
 		this.$container.on('click', function(event) {
 			event.preventDefault();
@@ -189,7 +210,7 @@ var App = function(options) {
 						radius: that.radius
 					});
 					x.position = pt.clone().add(normal.clone().multiplyScalar(OFFSET)); // offset so the cross shows up
-					x.rotation = normal.clone().applyMatrix3(Utils.YXZMatrix).multiplyScalar(Math.PI/2);
+					x.rotation = normal.clone().applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI/2);
 					that.scene.add(x);
 					that.render();
 					highlighted = x;
@@ -200,13 +221,6 @@ var App = function(options) {
 			}
 
 		});
-
-
-		var line = this.line();
-		line.visible = false;
-		this.scene.add(line);
-
-		var circle = this.circle();
 
 		this.$container.on('mousemove', function(event) {
 			event.preventDefault();
@@ -244,7 +258,7 @@ var App = function(options) {
 					radius: that.radius
 				});
 				circle.position = pt.clone().add(normal.clone().multiplyScalar(OFFSET));
-				circle.rotation = normal.clone().applyMatrix3(Utils.YXZMatrix).multiplyScalar(Math.PI/2);
+				circle.rotation = normal.clone().applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI/2);
 				that.scene.add(circle);
 				break;
 
@@ -356,7 +370,8 @@ var App = function(options) {
 		var geometry = new THREE.Geometry();
 		var material = new THREE.LineBasicMaterial({
 			color: options.color || 0xff0000,
-			opacity: 1.0
+			opacity: 1.0,
+			linewidth: 2.0
 		});
 
 		for (var i = 0; i <= resolution; i++) {
@@ -373,7 +388,7 @@ var App = function(options) {
 			normal = options.normal.clone();
 		var cylinderGeometry = new THREE.CylinderGeometry(size, size, depth, 16, 16, false);
 		var cylinder = new THREE.Mesh(cylinderGeometry, this.material);
-		cylinder.rotation = normal.applyMatrix3(Utils.ZYXMatrix).multiplyScalar(Math.PI/2);
+		cylinder.rotation = normal.applyMatrix3(Utils.ZYXMatrix()).multiplyScalar(Math.PI/2);
 		cylinder.position = options.position;
 		return cylinder;
 	},
@@ -395,18 +410,18 @@ var App = function(options) {
 		var mRot, angle;
 		if (l.z == 0) {
 			angle = Math.PI/2+Math.atan2(l.y, l.x);
-			mRot = Utils.XYZMatrix;
+			mRot = Utils.XYZMatrix();
 		} else if (l.y == 0) {
 			angle = Math.atan2(l.z, l.x);
-			mRot = Utils.XZYMatrix;
+			mRot = Utils.XZYMatrix();
 		} else if (l.x == 0) {
 			angle = Math.PI-Math.atan2(l.y, l.z);
-			mRot = Utils.ZYXMatrix;
+			mRot = Utils.ZYXMatrix();
 		} else {
 			return null; // not valid
 		}
 
-		var rotation = Utils.map(normal, Math.abs).applyMatrix3(Utils.YXZMatrix).multiplyScalar(Math.PI/2);
+		var rotation = Utils.map(normal, Math.abs).applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI/2);
 		rotation.add(Utils.map(normal, Math.abs).applyMatrix3(mRot).multiplyScalar(angle));
 
 		var cubeGeometry = new THREE.CubeGeometry(dist, options.length, options.depth);
@@ -435,8 +450,40 @@ var App = function(options) {
 
 	},
 
-	saw: function() {
+	saw: function(options) {
 
+
+	},
+
+	generateGrid: function(size) {
+		var plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size, 20, 20),
+			new THREE.MeshBasicMaterial({color:'greenyellow', wireframe: true}));
+
+		var group = new THREE.Object3D();
+
+		_.each(Utils.XYZNormals(), function(normal) {
+			var face,
+				rot = normal.clone().multiplyScalar(Math.PI/2),
+				pos = normal.clone().applyMatrix3(Utils.YXZMatrix()).multiplyScalar(size/2);
+
+			face = plane.clone();
+			face.rotation = rot;
+			face.position = pos;
+			group.add(face);
+
+			face = face.clone();
+			face.position.multiplyScalar(-1);
+			group.add(face);
+		});
+
+		return group;
+	},
+
+	showGrid: function(show) {
+		_.each(this.grid.children, function(mesh) {
+			mesh.visible = show;
+		});
+		this.render();
 	},
 
 	export: function(download) {

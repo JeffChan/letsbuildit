@@ -1,8 +1,6 @@
 ## TODO
-- sander
-- milling
 - bandsaw
-- show grid
+- sander
 
 ## Bugs
 - change to keyboard scroll
