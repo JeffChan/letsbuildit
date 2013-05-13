@@ -78,31 +78,34 @@ var App = function(options) {
 	renderer: null,
 	camera: null,
 	scene: null,
-	mode: 'mill',
+	mode: 'none',
 
 	radius: 5,
+	depth: 10,
 
 	initialize: function(options) {
 		options = options || {};
 
 		this.HEIGHT = options.height;
 		this.WIDTH = options.width;
+		this.locked = options.locked || false;
 
 		this.$container = $(options.htmlContainer);
 
 		this.renderer = new THREE.WebGLRenderer({ antialias: true });
 		this.renderer.setSize(this.WIDTH, this.HEIGHT);
-		this.$container.append(this.renderer.domElement);
+		this.$canvas = $(this.renderer.domElement);
+		this.$container.children('h4').after(this.renderer.domElement);
 
 		this.scene = new THREE.Scene();
 
 		this.camera = new THREE.PerspectiveCamera(VIEW_ANGLE, this.WIDTH/this.HEIGHT, NEAR, FAR);
 
 		// The camera starts at 0,0,0 so pull it back
-		this.camera.position.z = 250;
+		this.camera.position.z = 200;
 
 		// create a point light
-		this.pointLight = new THREE.PointLight(0xFFFFFF);
+		this.pointLight = new THREE.PointLight(0xffffff);
 		this.pointLight.position.set(0, 50, 130);
 		this.scene.add(this.pointLight);
 
@@ -119,10 +122,11 @@ var App = function(options) {
 		controls.keys = [ 65, 83, 68 ];
 		this.controls.addEventListener('change', _.bind(this.render, this));
 
-		this.material = new THREE.MeshNormalMaterial({
+		this.material = new THREE.MeshPhongMaterial({
 			color: 'silver'
 		});
-		var size = 100;
+
+		this.size = size = 100;
 		var cubeGeometry = new THREE.CubeGeometry(size,size,size);
 		var cube = new THREE.Mesh(cubeGeometry, this.material);
 		// cube.position.set(size/2, size/2, 0);
@@ -146,7 +150,14 @@ var App = function(options) {
 		this.$container.on('click', function(event) {
 			event.preventDefault();
 
-			var ray = Utils.clickToRay(event.clientX, event.clientY, that.WIDTH, that.HEIGHT, that.camera);
+			if (that.locked) {
+				return false;
+			}
+
+			var target = event.target;
+
+			var ray = Utils.clickToRay(event.clientX-target.offsetLeft, event.clientY-target.offsetTop, that.WIDTH, that.HEIGHT, that.camera);
+
 			var intersects = ray.intersectObjects([that.fake]);
 
 			if (intersects.length == 0) {
@@ -159,7 +170,6 @@ var App = function(options) {
 			}
 
 			var i = intersects[0];
-			console.log(i);
 			var pt = i.point;
 			var normal = i.face.normal;
 
@@ -173,7 +183,7 @@ var App = function(options) {
 				var output = that.subtract(that.piece, that.drill({
 					radius: that.radius,
 					position: pt,
-					depth: 1000,
+					depth: that.size * 2,
 					normal: normal
 				}));
 				that.redrawPiece(output);
@@ -195,7 +205,7 @@ var App = function(options) {
 						start: startPt,
 						end: pt,
 						length: that.radius*2,
-						depth: 30,
+						depth: that.depth*2,
 						normal: normal
 					});
 
@@ -225,7 +235,14 @@ var App = function(options) {
 		this.$container.on('mousemove', function(event) {
 			event.preventDefault();
 
-			var ray = Utils.clickToRay(event.clientX, event.clientY, that.WIDTH, that.HEIGHT, that.camera);
+			if (that.locked) {
+				return false;
+			}
+
+			var target = event.target;
+
+			var ray = Utils.clickToRay(event.clientX-target.offsetLeft, event.clientY-target.offsetTop, that.WIDTH, that.HEIGHT, that.camera);
+
 			var intersects = ray.intersectObjects([that.fake]);
 
 			that.scene.remove(circle);
@@ -233,8 +250,11 @@ var App = function(options) {
 			if (intersects.length == 0) {
 				line.visible = false;
 				that.render();
+				// that.$canvas.css('cursor', '');
 				return;
 			}
+
+			// that.$canvas.css('cursor', 'crosshair');
 
 			var i = intersects[0];
 			var pt = i.point;
@@ -456,8 +476,12 @@ var App = function(options) {
 	},
 
 	generateGrid: function(size) {
-		var plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size, 20, 20),
-			new THREE.MeshBasicMaterial({color:'greenyellow', wireframe: true}));
+		var plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size, 10, 10),
+			new THREE.MeshBasicMaterial({
+				color:'greenyellow',
+				wireframe: true,
+				wireframeLinewidth: 2
+			}));
 
 		var group = new THREE.Object3D();
 
@@ -492,7 +516,9 @@ var App = function(options) {
 		if (download === true) {
 			var blob = new Blob([json], {type: "text/plain;charset=utf-8"});
 			var name = prompt('What would you like to name this file?');
-			saveAs(blob, name+'.json');
+			if (name) {
+				saveAs(blob, name+'.json');
+			}
 		}
 		return json;
 	},

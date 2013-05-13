@@ -1,6 +1,11 @@
 ## TODO
 - bandsaw
-- sander
+- implement levels
+- implement timer
+- help menu
+- about menu
+- tool tips
+- icons
 
 ## Bugs
 - change to keyboard scroll

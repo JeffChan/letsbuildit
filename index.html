@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>Ballz</title>
-	<link rel="stylesheet" type="text/css" href="style.css" />
-	<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+	<link rel="stylesheet" type="text/css" href="c/bootstrap.min.css" />
+	<link rel="stylesheet" type="text/css" href="c/slider.css" />
+	<link rel="stylesheet" type="text/css" href="c/style.css" />
+
 	<script type="text/javascript" src="j/jquery-1.9.1.min.js"></script>
-	<script type="text/javascript" src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+	<script type="text/javascript" src="j/bootstrap.min.js"></script>
+	<script type="text/javascript" src="j/bootstrap-slider.js"></script>
+
 	<script type="text/javascript" src="j/underscore-min.js"></script>
 	<script type="text/javascript" src="j/three.min.js"></script>
 	<script type="text/javascript" src="j/csg.js"></script>
@@ -21,15 +25,16 @@
 	$(function() {
 
 		window.app = new App({
-			htmlContainer: '#container',
-			width: 600,
-			height: 450
+			htmlContainer: '#sandbox',
+			width: 460,
+			height: 345
 		});
 
 		window.demo = new App({
-			htmlContainer: '#demo',
-			width: 400,
-			height: 300
+			htmlContainer: '#exhibit',
+			width: 300,
+			height: 225,
+			locked: true
 		});
 		$('#export').on('click', function(e) {
 			e.preventDefault();
@@ -46,24 +51,76 @@
 			reader.readAsText(file);
 		});
 
-		$('input.tool').on('click', function(e) {
-			var tool = $(e.target);
-			$('#tool').text(tool.val());
-			app.setMode(tool.attr('id'));
+		$('a.tool').on('click', function(e) {
+			e.preventDefault();
+			var $tool = $(e.target);
+			$('#currentTool').text($tool.text());
+			app.setMode($tool.attr('id'));
+
+			$('a.tool').each(function(i, el) {
+				$(el).addClass('btn-info');
+			});
+			$tool.removeClass('btn-info');
 		});
 
-		$("#slider").slider({
-			value: 5,
-			min: 2,
-			max: 50,
-			step: 1,
-			slide: function(event, ui) {
-				$('#radius').val(ui.value);
-				app.radius = $('#radius').val();
+		var descriptions = {
+			mill: 'mill is the bomb',
+			saw: 'saw is the bomb',
+			drill: 'drill is the bomb'
+		};
+		$('a.tool').each(function(i, el) {
+			var $tool = $(el);
+			var i = $tool.attr('id');
+			$tool.popover({
+				trigger: 'hover',
+				title: $tool.text(),
+				content: descriptions[i]
+			});
+		});
+
+		$('.disabled-tool').popover({
+			trigger: 'hover',
+			title: 'Not Available',
+			content: 'This tool is not available for noobs!'
+		});
+
+		$('#gridToggle').on('click', function(e) {
+			e.preventDefault();
+			var el = $(this);
+			var state = el.data('state');
+			switch (state) {
+				case 'show' :
+					app.showGrid(true);
+					demo.showGrid(true);
+					el.data('state', 'hide');
+					el.find('span').text('Hide Grid');
+					break;
+				case 'hide' :
+					app.showGrid(false);
+					demo.showGrid(false);
+					el.data('state', 'show');
+					el.find('span').text('Show Grid');
+					break;
 			}
 		});
-		$('#radius').val($('#slider').slider('value'));
-		app.radius = $('#radius').val();
+
+		$("#radius").slider({
+			value: 5,
+			min: 2,
+			max: 12,
+			step: 2
+		}).on('slideStop', function(e) {
+			app.radius = e.value;
+		});
+
+		$("#depth").slider({
+			value: 5,
+			min: 2,
+			max: 100,
+			step: 4
+		}).on('slideStop', function(e) {
+			app.depth = e.value;
+		});
 	});
 
 	</script>
@@ -71,34 +128,99 @@
 
 <body>
 
-	<div id="container"></div>
+<div id="about" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		<h2>About</h2>
+	</div>
+	<div class="modal-body">
+		<p>TODO</p>
+	</div>
+</div>
 
-	<div id="demo"></div>
+<div id="help" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		<h2>Help</h2>
+	</div>
+	<div class="modal-body">
+		<p>TODO</p>
+	</div>
+</div>
 
+<div class="wrapper">
+	<div class="navbar navbar-inverse"><div class="navbar-inner">
+		<div class="container" style="width: auto;">
+			<span class="brand">Let's Build It</span>
+			<div class="nav-collapse">
+				<ul class="nav">
 
-	<div class="imex clear">
-		<input type="button" value="Export" id="export" /><br/><br/>
-		<strong>Import:</strong> <input type="file" id="file" />
+				</ul>
+				<ul class="nav pull-right">
+<!-- 					<li class="dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown">Options <b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li><a href="#" id="export">Download</a></li>
+						</ul>
+					</li> -->
+					<li><a href="#" data-toggle="modal" data-target="#help">Help</a></li>
+					<li><a href="#" data-toggle="modal" data-target="#about">About</a></li>
+				</ul>
+			</div>
+		</div>
+	</div></div>
+
+	<div class="belly">
+
+	<div class="row">
+		<div class="tools span2">
+			<h3>Tools</h3>
+			<a id="mill" class="tool btn btn-large btn-info">Mill</a>
+			<a id="drill" class="tool btn btn-large btn-info">Drill Press</a>
+			<a id="saw" class="tool btn btn-large btn-info">Band Saw</a>
+			<span id="sander" class="disabled-tool tool btn btn-large btn-inverse">Belt Sander</span>
+			<span id="lathe" class="disabled-tool tool btn btn-large btn-inverse">Lathe</span>
+		</div>
+
+		<div class="span10">
+			<div class="row">
+				<div class="span4">
+					<h3>Time Left: 6 minutes</h3>
+				</div>
+				<div class="span6">
+					<br>
+					<div class="progress progress-warning progress-striped active">
+						<div class="bar" style="width: 60%;"></div>
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div id="sandbox" class="span6">
+					<h4>Workbench</h4>
+					<!--canvas-->
+					<div class="well">
+						<label>Radius <input id="radius" type="text" class="span3" /></label>
+						<label>Depth <input id="depth" type="text" class="span3" /></label>
+					</div>
+				</div>
+
+				<div id="exhibit" class="span4">
+					<h4>Sample</h4>
+					<!--canvas-->
+					<a class="btn btn-success" href="#" id="export"><i class="icon-download icon-white"></i> Download</a>
+					<a class="btn btn-success" href="#" id="gridToggle" data-state="hide"><i class="icon-th icon-white"></i> <span>Hide Grid</span></a>
+				</div>
+			</div>
+		</div>
+
 	</div>
 
-	<br/><br/>
-	<div class="mode">
-		<strong>Current:</strong> <span id="tool">Mill</span><br/>
-		<p>
-			<input type="button" value="Mill" id="mill" class="tool" />
-			<input type="button" value="Drill Press" id="drill" class="tool" />
-			<input type="button" value="Belt Sander" id="sander" class="tool" />
-			<input type="button" value="Band Saw" id="saw" class="tool" />
-			<input type="button" value="Lathe" id="lathe" class="tool" />
-			<label for="radius">
-				Size: <input type="text" id="radius" style="border: 0; color: red; font-weight: bold; font-size: 14px;" />
-			</label>
-		</p>
-
-
-		<div id="slider"></div>
+	<!-- <strong>Import:</strong> <input type="file" id="file" /> -->
 	</div>
-	<!-- <textarea id="import"></textarea> -->
+
+</div>
+
 </body>
 
 </html>

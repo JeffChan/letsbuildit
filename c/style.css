@@ -1,0 +1,37 @@
+.wrapper {
+	max-width: 1050px;
+	margin: 0 auto;
+}
+
+.belly {
+	padding: 10px 30px;
+	margin: 0 auto;
+	width: 960px;
+}
+
+
+canvas {
+	cursor: crosshair;
+	border: 2px solid #e36b23;
+}
+
+/*.span6, .span2, .span4, .row {
+	border: 1px yellow solid;
+}
+*/
+
+.tool {
+	margin: 10px 0;
+}
+
+.clear {
+	clear: both;
+}
+
+.left {
+	float: left;
+}
+
+.right {
+	float: right;
+}
