@@ -150,23 +150,21 @@
 
 <div class="wrapper">
 	<div class="navbar navbar-inverse"><div class="navbar-inner">
-		<div class="container" style="width: auto;">
-			<span class="brand">Let's Build It</span>
-			<div class="nav-collapse">
-				<ul class="nav">
+		<span class="brand">Let's Build It</span>
+		<div class="nav-collapse">
+			<ul class="nav">
 
-				</ul>
-				<ul class="nav pull-right">
-<!-- 					<li class="dropdown">
-						<a href="#" class="dropdown-toggle" data-toggle="dropdown">Options <b class="caret"></b></a>
-						<ul class="dropdown-menu">
-							<li><a href="#" id="export">Download</a></li>
-						</ul>
-					</li> -->
-					<li><a href="#" data-toggle="modal" data-target="#help">Help</a></li>
-					<li><a href="#" data-toggle="modal" data-target="#about">About</a></li>
-				</ul>
-			</div>
+			</ul>
+			<ul class="nav pull-right">
+				<!-- <li class="dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Options <b class="caret"></b></a>
+					<ul class="dropdown-menu">
+						<li><a href="#" id="export">Download</a></li>
+					</ul>
+				</li> -->
+				<li><a href="#" data-toggle="modal" data-target="#help">Help</a></li>
+				<li><a href="#" data-toggle="modal" data-target="#about">About</a></li>
+			</ul>
 		</div>
 	</div></div>
 
@@ -187,11 +185,18 @@
 				<div class="span4">
 					<h3>Time Left: 6 minutes</h3>
 				</div>
-				<div class="span6">
+				<div class="span4">
 					<br>
-					<div class="progress progress-warning progress-striped active">
+					<div class="progress progress-danger progress-striped active" style="height: 29px;">
 						<div class="bar" style="width: 60%;"></div>
 					</div>
+				</div>
+				<div class="span2">
+					<br>
+					<a class="btn btn-success" href="#" id="export">
+						<i class="icon-ok icon-white"></i>&nbsp;
+						I'm Done!
+					</a>
 				</div>
 			</div>
 
@@ -200,16 +205,22 @@
 					<h4>Workbench</h4>
 					<!--canvas-->
 					<div class="well">
-						<label>Radius <input id="radius" type="text" class="span3" /></label>
-						<label>Depth <input id="depth" type="text" class="span3" /></label>
+						<label>Radius&nbsp; <input id="radius" type="text" class="span3" /></label>
+						<label>Depth&nbsp; <input id="depth" type="text" class="span3" /></label>
 					</div>
 				</div>
 
 				<div id="exhibit" class="span4">
 					<h4>Sample</h4>
 					<!--canvas-->
-					<a class="btn btn-success" href="#" id="export"><i class="icon-download icon-white"></i> Download</a>
-					<a class="btn btn-success" href="#" id="gridToggle" data-state="hide"><i class="icon-th icon-white"></i> <span>Hide Grid</span></a>
+					<a class="btn btn-info" href="#" id="export">
+						<i class="icon-download icon-white"></i>&nbsp;
+						Download
+					</a>
+					<a class="btn btn-info" href="#" id="gridToggle" data-state="hide">
+						<i class="icon-th icon-white"></i>&nbsp;
+						<span>Hide Grid</span>
+					</a>
 				</div>
 			</div>
 		</div>

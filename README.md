@@ -2,10 +2,8 @@
 - bandsaw
 - implement levels
 - implement timer
-- help menu
-- about menu
-- tool tips
 - icons
+- add tutorial
 
 ## Bugs
 - change to keyboard scroll
