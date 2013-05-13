@@ -54,8 +54,11 @@
 		$('a.tool').on('click', function(e) {
 			e.preventDefault();
 			var $tool = $(e.target);
+			var id = $tool.attr('id');
 			$('#currentTool').text($tool.text());
-			app.setMode($tool.attr('id'));
+			app.setMode(id);
+
+			$('body').removeClass('selected-mill selected-drill selected-saw').addClass('selected-'+id);
 
 			$('a.tool').each(function(i, el) {
 				$(el).addClass('btn-info');
@@ -221,9 +224,9 @@
 					<h4>Workbench</h4>
 					<!--canvas-->
 					<div class="well">
-						<label>Radius&nbsp; <input id="radius" type="text" class="span3" /></label>
-						<label>Depth&nbsp; <input id="depth" type="text" class="span3" /></label>
-						<label>Cut Inverse&nbsp; <input type="checkbox" id="cutInverse" value="cutInverse" /></label>
+						<label class="radius">Radius&nbsp; <input id="radius" type="text" class="span3" /></label>
+						<label class="depth">Depth&nbsp; <input id="depth" type="text" class="span3" /></label>
+						<label class="cutInverse">Cut Inverse&nbsp; <input type="checkbox" id="cutInverse" value="cutInverse" /></label>
 					</div>
 				</div>
 

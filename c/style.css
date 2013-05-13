@@ -34,3 +34,20 @@ canvas {
 .right {
 	float: right;
 }
+
+.radius, .depth, .cutInverse {
+	display: none;
+}
+
+.selected-drill .radius {
+	display: block;
+}
+
+.selected-mill .radius,
+.selected-mill .depth {
+	display: block;
+}
+
+.selected-saw .cutInverse {
+	display: block;
+}
