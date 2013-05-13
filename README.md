@@ -2,7 +2,6 @@
 - implement levels
 - implement timer
 - icons
-- add tutorial
 
 ## Bugs
 - change to keyboard scroll

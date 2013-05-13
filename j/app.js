@@ -173,7 +173,7 @@ var App = function(options) {
 
 			var ray = Utils.clickToRay(event.clientX-target.offsetLeft, event.clientY-target.offsetTop, that.WIDTH, that.HEIGHT, that.camera);
 
-			var intersects = ray.intersectObjects([that.fake]);
+			var intersects = ray.intersectObjects(that.intersectsMode());
 
 			if (intersects.length == 0) {
 				if (highlighted) {
@@ -281,7 +281,7 @@ var App = function(options) {
 
 			var ray = Utils.clickToRay(event.clientX-target.offsetLeft, event.clientY-target.offsetTop, that.WIDTH, that.HEIGHT, that.camera);
 
-			var intersects = ray.intersectObjects([that.fake]);
+			var intersects = ray.intersectObjects(that.intersectsMode());
 
 			that.scene.remove(circle);
 			circle = null;
@@ -641,6 +641,18 @@ var App = function(options) {
 			case 'top' :
 				this.camera.position.set(0, 200, 0);
 				break;
+		}
+	},
+
+	intersectsMode: function() {
+		switch (this.mode) {
+		case 'drill' :
+		case 'saw' :
+			return [this.piece];
+		case 'mill' :
+			return [this.fake];
+		default :
+			return [];
 		}
 	}
 
