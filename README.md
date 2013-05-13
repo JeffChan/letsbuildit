@@ -1,6 +1,5 @@
 ## TODO
 - implement levels
-- implement timer
 - icons
 
 ## Bugs

@@ -93,7 +93,11 @@ var Timer = function(options) {
 		this.$container = $(options.barContainer);
 		this.$bar = this.$container.find('.bar');
 		this.$text = $(options.textContainer);
-		this.timeLeft = this.totalTime = options.startTime * 1000;
+		this.reset(options.startTime);
+	},
+
+	reset: function(seconds) {
+		this.timeLeft = this.totalTime = seconds * 1000;
 		this.updateTime();
 	},
 
@@ -108,7 +112,7 @@ var Timer = function(options) {
 	updateTime: function() {
 		var percentage = Math.round(this.timeLeft * 100 / this.totalTime);
 		this.$bar.css('width', percentage+'%');
-		this.$text.text(Math.round(this.timeLeft / 1000) + " seconds");
+		this.$text.text(Math.round(this.timeLeft / 1000) + " s");
 
 		if (percentage < 20) {
 			this.$container.removeClass('progress-warning').addClass('progress-danger');
