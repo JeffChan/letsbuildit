@@ -1,7 +1,7 @@
 var VIEW_ANGLE = 45,
 	NEAR = 0.1,
 	FAR = 10000,
-	OFFSET = 0.05;
+	OFFSET = 0.1;
 
 var Utils = {
 
