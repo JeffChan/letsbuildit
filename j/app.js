@@ -90,7 +90,7 @@ var App = function(options) {
 	renderer: null,
 	camera: null,
 	scene: null,
-	mode: 'saw',
+	mode: '',
 
 	radius: 5,
 	depth: 10,
@@ -162,7 +162,7 @@ var App = function(options) {
 
 		var plane = null;
 
-		this.$container.on('click', function(event) {
+		this.$canvas.on('click', function(event) {
 			event.preventDefault();
 
 			if (that.locked) {
@@ -270,7 +270,7 @@ var App = function(options) {
 
 		});
 
-		this.$container.on('mousemove', function(event) {
+		this.$canvas.on('mousemove', function(event) {
 			event.preventDefault();
 
 			if (that.locked) {

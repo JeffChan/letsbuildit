@@ -123,8 +123,16 @@
 			app.depth = e.value;
 		});
 
+		$('#cutInverse').on('change', function(e) {
+			if (this.checked) {
+				app.cutInverse = true;
+			} else {
+				app.cutInverse = false;
+			}
+		});
+
 		$('.change-view').on('click', function(e) {
-			var $el = $(e.target);
+			var $el = $(this);
 			var view = $el.attr('id');
 			app.setView(view);
 			demo.setView(view);
@@ -215,6 +223,7 @@
 					<div class="well">
 						<label>Radius&nbsp; <input id="radius" type="text" class="span3" /></label>
 						<label>Depth&nbsp; <input id="depth" type="text" class="span3" /></label>
+						<label>Cut Inverse&nbsp; <input type="checkbox" id="cutInverse" value="cutInverse" /></label>
 					</div>
 				</div>
 
