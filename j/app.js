@@ -531,6 +531,24 @@ var App = function(options) {
 
 	setMode: function(mode) {
 		this.mode = mode;
+	},
+
+	setView: function(view) {
+		this.controls.reset();
+		switch (view) {
+			case 'isometric' :
+				this.camera.position.set(150, 150, 150);
+				break;
+			case 'front' :
+				this.camera.position.set(0, 0, 200);
+				break;
+			case 'right' :
+				this.camera.position.set(200, 0, 0);
+				break;
+			case 'top' :
+				this.camera.position.set(0, 200, 0);
+				break;
+		}
 	}
 
 	};

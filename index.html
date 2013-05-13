@@ -121,6 +121,13 @@
 		}).on('slideStop', function(e) {
 			app.depth = e.value;
 		});
+
+		$('.change-view').on('click', function(e) {
+			var $el = $(e.target);
+			var view = $el.attr('id');
+			app.setView(view);
+			demo.setView(view);
+		});
 	});
 
 	</script>
@@ -213,6 +220,7 @@
 				<div id="exhibit" class="span4">
 					<h4>Sample</h4>
 					<!--canvas-->
+					<br><br>
 					<a class="btn btn-info" href="#" id="export">
 						<i class="icon-download icon-white"></i>&nbsp;
 						Download
@@ -221,6 +229,13 @@
 						<i class="icon-th icon-white"></i>&nbsp;
 						<span>Hide Grid</span>
 					</a>
+					<br><br>
+					<div class="btn-group">
+						<button class="btn change-view" id="isometric">Isometric</button>
+						<button class="btn change-view" id="top">Top</button>
+						<button class="btn change-view" id="right">Right</button>
+						<button class="btn change-view" id="front">Front</button>
+					</div>
 				</div>
 			</div>
 		</div>
