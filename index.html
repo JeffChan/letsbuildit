@@ -24,7 +24,13 @@
 
 	$(function() {
 
-		$('#help').modal();
+		// $('#help').modal();
+
+		window.timer = new Timer({
+			barContainer: '#timerBar',
+			textContainer: '#timerText',
+			startTime: 10 * 60 * 60 // in seconds
+		});
 
 		window.app = new App({
 			htmlContainer: '#sandbox',
@@ -37,6 +43,10 @@
 			width: 300,
 			height: 225,
 			locked: true
+		});
+		$('#undo').on('click', function(e) {
+			e.preventDefault();
+			app.undo();
 		});
 		$('#export').on('click', function(e) {
 			e.preventDefault();
@@ -207,17 +217,17 @@
 		<div class="span10">
 			<div class="row">
 				<div class="span4">
-					<h3>Time Left: 6 minutes</h3>
+					<h3>Time Left: <span id="timerText"></span></h3>
 				</div>
 				<div class="span4">
 					<br>
-					<div class="progress progress-danger progress-striped active" style="height: 29px;">
+					<div id="timerBar" class="progress progress-striped active" style="height: 29px;">
 						<div class="bar" style="width: 60%;"></div>
 					</div>
 				</div>
 				<div class="span2">
 					<br>
-					<a class="btn btn-success" href="#" id="export">
+					<a class="btn btn-success" href="#" id="done">
 						<i class="icon-ok icon-white"></i>&nbsp;
 						I'm Done!
 					</a>
@@ -239,13 +249,18 @@
 					<h4>Sample</h4>
 					<!--canvas-->
 					<br><br>
+					<a class="btn btn-info" href="#" id="gridToggle" data-state="hide">
+						<i class="icon-th icon-white"></i>&nbsp;
+						<span>Hide Grid</span>
+					</a>
 					<a class="btn btn-info" href="#" id="export">
 						<i class="icon-download icon-white"></i>&nbsp;
 						Download
 					</a>
-					<a class="btn btn-info" href="#" id="gridToggle" data-state="hide">
-						<i class="icon-th icon-white"></i>&nbsp;
-						<span>Hide Grid</span>
+					<br><br>
+					<a class="btn btn-danger" href="#" id="undo">
+						<i class="icon-share-alt icon-white"></i>&nbsp;
+						Undo
 					</a>
 					<br><br>
 					<div class="btn-group">
@@ -260,7 +275,7 @@
 
 	</div>
 
-	<!-- <strong>Import:</strong> <input type="file" id="file" /> -->
+	<strong>Import:</strong> <input type="file" id="file" />
 	</div>
 
 </div>

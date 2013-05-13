@@ -82,6 +82,49 @@ var Utils = {
 	}
 };
 
+var Timer = function(options) {
+
+	var that = {
+
+	timeLeft: 0,
+	totalTime: 0,
+
+	initialize: function(options) {
+		this.$container = $(options.barContainer);
+		this.$bar = this.$container.find('.bar');
+		this.$text = $(options.textContainer);
+		this.timeLeft = this.totalTime = options.startTime * 1000;
+		this.updateTime();
+	},
+
+	subtractTime: function(seconds) {
+		this.timeLeft -= seconds * 1000;
+		if (this.timeLeft < 0) {
+			this.timeLeft = 0;
+		}
+		this.updateTime();
+	},
+
+	updateTime: function() {
+		var percentage = Math.round(this.timeLeft * 100 / this.totalTime);
+		this.$bar.css('width', percentage+'%');
+		this.$text.text(Math.round(this.timeLeft / 1000) + " seconds");
+
+		if (percentage < 20) {
+			this.$container.removeClass('progress-warning').addClass('progress-danger');
+		} else if (percentage < 50) {
+			this.$container.addClass('progress-warning').removeClass('progress-danger');
+		} else {
+			this.$container.removeClass('progress-warning progress-danger');
+		}
+	}
+
+	};
+
+	that.initialize(options);
+	return that;
+};
+
 var App = function(options) {
 
 	var that = {
@@ -119,7 +162,6 @@ var App = function(options) {
 
 		// create a point light
 		this.pointLight = new THREE.PointLight(0xffffff);
-		this.pointLight.position.set(0, 50, 130);
 		this.scene.add(this.pointLight);
 
 		this.controls = new THREE.TrackballControls(this.camera);
@@ -202,6 +244,9 @@ var App = function(options) {
 					normal: normal
 				}));
 				that.redrawPiece(output);
+
+				window.timer.subtractTime(0.013 * Math.PI * that.radius * that.radius * 100);
+
 				break;
 
 			case 'mill':
@@ -227,6 +272,8 @@ var App = function(options) {
 					if (mill) {
 						var output = that.subtract(that.piece, mill);
 						that.redrawPiece(output);
+
+						window.timer.subtractTime(0.020 * (Math.PI*that.radius*that.radius + 2*that.radius*startPt.distanceTo(pt)) * that.depth);
 					}
 
 				} else {
@@ -263,6 +310,8 @@ var App = function(options) {
 					saw.rotation = plane.rotation.clone().applyMatrix3(Utils.YZXMatrix());
 					var output = that.subtract(that.piece, saw);
 					that.redrawPiece(output);
+
+					window.timer.subtractTime(240);
 				}
 
 				break;
@@ -408,9 +457,16 @@ var App = function(options) {
 	redrawPiece: function(newPiece) {
 		if (this.piece)
 			this.scene.remove(this.piece);
+		this.oldPiece = this.piece;
 		this.piece = newPiece;
 		this.scene.add(this.piece);
 		this.render();
+	},
+
+	undo: function() {
+		if (this.oldPiece) {
+			this.redrawPiece(this.oldPiece);
+		}
 	},
 
 	line: function(options) {
