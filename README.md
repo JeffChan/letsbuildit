@@ -1,5 +1,4 @@
 ## TODO
-- bandsaw
 - implement levels
 - implement timer
 - icons
