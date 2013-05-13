@@ -72,14 +72,15 @@
 			var $tool = $(el);
 			var i = $tool.attr('id');
 			$tool.popover({
-				trigger: 'hover',
+				trigger: 'hover focus',
+				container: $tool[0],
 				title: $tool.text(),
 				content: descriptions[i]
 			});
 		});
 
 		$('.disabled-tool').popover({
-			trigger: 'hover',
+			trigger: 'hover focus',
 			title: 'Not Available',
 			content: 'This tool is not available for noobs!'
 		});

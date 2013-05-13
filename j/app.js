@@ -61,12 +61,24 @@ var Utils = {
 		return new THREE.Matrix3(0, 1, 0, 1, 0, 0, 0, 0, 1);
 	},
 
+	YZXMatrix: function() {
+		return new THREE.Matrix3(0, 0, 1, 1, 0, 0, 0, 1, 0);
+	},
+
 	ZYXMatrix: function() {
 		return new THREE.Matrix3(0, 0, 1, 0, 1, 0, 1, 0, 0);
 	},
 
+	ZXYMatrix: function() {
+		return new THREE.Matrix3(0, 1, 0, 0, 0, 1, 1, 0, 0);
+	},
+
 	XYZNormals: function() {
 		return [ new THREE.Vector3(1,0,0), new THREE.Vector3(0,1,0), new THREE.Vector3(0,0,1) ];
+	},
+
+	unitVector: function() {
+		return new THREE.Vector3(1,1,1);
 	}
 };
 
@@ -78,10 +90,11 @@ var App = function(options) {
 	renderer: null,
 	camera: null,
 	scene: null,
-	mode: 'none',
+	mode: 'saw',
 
 	radius: 5,
 	depth: 10,
+	cutInverse: false,
 
 	initialize: function(options) {
 		options = options || {};
@@ -146,6 +159,8 @@ var App = function(options) {
 		line.visible = false;
 		this.scene.add(line);
 		var circle = this.circle();
+
+		var plane = null;
 
 		this.$container.on('click', function(event) {
 			event.preventDefault();
@@ -228,6 +243,29 @@ var App = function(options) {
 				}
 
 				break;
+			case 'saw':
+
+				if (plane) {
+					var dir = normal.clone().applyMatrix3(Utils.ZXYMatrix());
+					var length = that.size
+					var position = plane.position.clone();
+					var shift = dir.multiplyScalar(length/2);
+
+					if (that.cutInverse) {
+						shift = Utils.map(shift, function(a) {return -1*a;});
+					}
+
+					var saw = that.saw({
+						normal: normal,
+						position: position.sub(shift),
+						length: length
+					});
+					saw.rotation = plane.rotation.clone().applyMatrix3(Utils.YZXMatrix());
+					var output = that.subtract(that.piece, saw);
+					that.redrawPiece(output);
+				}
+
+				break;
 			}
 
 		});
@@ -246,6 +284,10 @@ var App = function(options) {
 			var intersects = ray.intersectObjects([that.fake]);
 
 			that.scene.remove(circle);
+			circle = null;
+
+			that.scene.remove(plane);
+			plane = null;
 
 			if (intersects.length == 0) {
 				line.visible = false;
@@ -288,11 +330,36 @@ var App = function(options) {
 					line.visible = true;
 					line.geometry.verticesNeedUpdate = true;
 					line.geometry.vertices = [
-						startPt.clone().add(normal.clone().multiplyScalar(0.05)),
-						pt.clone().add(normal.clone().multiplyScalar(0.05))
+						startPt.clone().add(normal.clone().multiplyScalar(OFFSET)),
+						pt.clone().add(normal.clone().multiplyScalar(OFFSET))
 					];
 				}
 
+				break;
+
+			case 'saw':
+				plane = that.plane({
+					segments: 5,
+					size: 200,
+					normal: normal,
+					material: new THREE.MeshBasicMaterial({
+						color:'red',
+						wireframe: true,
+						wireframeLinewidth: 2
+					})
+				});
+				plane.position = pt.clone().sub(normal.clone().multiplyScalar(that.size/2));
+				plane.rotation = normal.clone().applyMatrix3(Utils.ZYXMatrix()).multiplyScalar(Math.PI/2);
+				that.scene.add(plane);
+
+				var sign = that.cutInverse ? 1 : -1;
+				var dir = normal.clone().applyMatrix3(Utils.ZXYMatrix());
+				line.visible = true;
+				line.geometry.verticesNeedUpdate = true;
+				line.geometry.vertices = [
+					pt.clone().add(dir.clone().multiplyScalar(OFFSET)),
+					pt.clone().add(dir.clone().multiplyScalar(sign*that.size*2))
+				];
 				break;
 			}
 
@@ -402,6 +469,19 @@ var App = function(options) {
 		return new THREE.Line( geometry, material);
 	},
 
+	plane: function(options) {
+		options = options || {};
+
+		var size = options.size;
+		var material = options.material || new THREE.MeshBasicMaterial({
+			color: options.color
+		});
+		var segments = options.segments || 10;
+		var plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size, segments, segments), material);
+
+		return plane;
+	},
+
 	drill: function(options) {
 		var size = options.radius,
 			depth = options.depth,
@@ -466,22 +546,35 @@ var App = function(options) {
 		return this.union(round1, round2, cube);
 	},
 
+	saw: function(options) {
+		options = options || {};
+
+		var normal = options.normal;
+		var position = options.position;
+		var length = options.length;
+
+		var cubeGeometry = new THREE.CubeGeometry(this.size*2, length, this.size*2);
+		var cube = new THREE.Mesh(cubeGeometry, this.material);
+		cube.rotation = Utils.map(normal, Math.abs).applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI/2);
+		cube.position = position;
+
+		return cube;
+	},
+
 	sander: function(options) {
 
 	},
 
-	saw: function(options) {
-
-
-	},
-
 	generateGrid: function(size) {
-		var plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size, 10, 10),
-			new THREE.MeshBasicMaterial({
+		var plane = this.plane({
+			size: size,
+			segments: 10,
+			material: new THREE.MeshBasicMaterial({
 				color:'greenyellow',
 				wireframe: true,
 				wireframeLinewidth: 2
-			}));
+			})
+		});
 
 		var group = new THREE.Object3D();
 
