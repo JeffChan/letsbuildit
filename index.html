@@ -63,9 +63,9 @@
 			$('body').removeClass('selected-mill selected-drill selected-saw').addClass('selected-'+id);
 
 			$('a.tool').each(function(i, el) {
-				$(el).addClass('btn-info');
+				$(el).removeClass('btn-info');
 			});
-			$tool.removeClass('btn-info');
+			$tool.addClass('btn-info');
 		});
 
 		var descriptions = {
@@ -197,9 +197,9 @@
 	<div class="row">
 		<div class="tools span2">
 			<h3>Tools</h3>
-			<a id="mill" class="tool btn btn-large btn-info">Mill</a>
-			<a id="drill" class="tool btn btn-large btn-info">Drill Press</a>
-			<a id="saw" class="tool btn btn-large btn-info">Band Saw</a>
+			<a id="drill" class="tool btn btn-large">Drill Press</a>
+			<a id="mill" class="tool btn btn-large">Mill</a>
+			<a id="saw" class="tool btn btn-large">Band Saw</a>
 			<span id="sander" class="disabled-tool tool btn btn-large btn-inverse">Belt Sander</span>
 			<span id="lathe" class="disabled-tool tool btn btn-large btn-inverse">Lathe</span>
 		</div>
