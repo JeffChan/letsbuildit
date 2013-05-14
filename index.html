@@ -44,6 +44,11 @@
 			height: 225,
 			locked: true
 		});
+
+		$('#reset').on('click', function(e) {
+			e.preventDefault();
+			app.reset();
+		});
 		$('#undo').on('click', function(e) {
 			e.preventDefault();
 			app.undo();
@@ -121,7 +126,7 @@
 		});
 
 		$("#radius").slider({
-			value: 5,
+			value: 6,
 			min: 2,
 			max: 12,
 			step: 2
@@ -254,13 +259,14 @@
 						<span>Hide Grid</span>
 					</a>
 					<a class="btn btn-info" href="#" id="export">
-						<i class="icon-download icon-white"></i>&nbsp;
-						Download
+						<i class="icon-download icon-white"></i>&nbsp;Download
 					</a>
 					<br><br>
 					<a class="btn btn-danger" href="#" id="undo">
-						<i class="icon-share-alt icon-white"></i>&nbsp;
-						Undo
+						<i class="icon-share-alt icon-white"></i>&nbsp;Undo
+					</a>
+					<a class="btn btn-danger" href="#" id="reset">
+						<i class="icon-remove-circle icon-white"></i>&nbsp;Scrap
 					</a>
 					<br><br>
 					<div class="btn-group">

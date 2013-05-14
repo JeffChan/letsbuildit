@@ -143,6 +143,8 @@ var App = function(options) {
 	depth: 10,
 	cutInverse: false,
 
+	resetCount: -1,
+
 	initialize: function(options) {
 		options = options || {};
 
@@ -186,10 +188,7 @@ var App = function(options) {
 		});
 
 		this.size = size = 100;
-		var cubeGeometry = new THREE.CubeGeometry(size,size,size);
-		var cube = new THREE.Mesh(cubeGeometry, this.material);
-		// cube.position.set(size/2, size/2, 0);
-		this.redrawPiece(cube);
+		var cube = this.reset();
 
 		this.fake = cube.clone();
 		this.fake.visible = false;
@@ -680,6 +679,14 @@ var App = function(options) {
 		var parsed = (new THREE.JSONLoader()).parse(JSON.parse(json));
 		var mesh = new THREE.Mesh(parsed.geometry, this.material);
 		return mesh;
+	},
+
+	reset: function() {
+		var size = this.size;
+		var cube = new THREE.Mesh(new THREE.CubeGeometry(size,size,size), this.material);
+		this.redrawPiece(cube);
+		this.resetCount++;
+		return cube;
 	},
 
 	setMode: function(mode) {
