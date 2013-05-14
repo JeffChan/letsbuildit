@@ -1,5 +1,4 @@
 ## TODO
-- implement levels
 - icons
 
 ## Bugs

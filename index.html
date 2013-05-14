@@ -107,7 +107,7 @@
 
 	$(function() {
 
-		// $('#help').modal();
+		$('#help').modal();
 
 		window.timer = new Timer({
 			barContainer: '#timerBar',
@@ -173,23 +173,24 @@
 		});
 
 		var descriptions = {
-			mill: 'mill is the bomb',
-			saw: 'saw is the bomb',
-			drill: 'drill is the bomb'
+			mill: 'A rotary tool used for shaping and cutting grooves <a href="http://www.youtube.com/watch?v=j0vRYe9uvnI">YouTube Video</a>',
+			saw: 'A power saw used for cutting materials <a href="http://www.youtube.com/watch?v=ZYlLIp5urJQ">YouTube Video</a>',
+			drill: 'An upright drilling machine for producing holes <a href="http://www.youtube.com/watch?v=ul20R32HJ3E">YouTube Video</a>'
 		};
 		$('a.tool').each(function(i, el) {
 			var $tool = $(el);
 			var i = $tool.attr('id');
 			$tool.popover({
-				trigger: 'hover focus',
+				trigger: 'hover',
 				container: $tool[0],
+				html: true,
 				title: $tool.text(),
 				content: descriptions[i]
 			});
 		});
 
 		$('.disabled-tool').popover({
-			trigger: 'hover focus',
+			trigger: 'hover',
 			title: 'Not Available',
 			content: 'This tool is not available for noobs!'
 		});
@@ -323,7 +324,7 @@
 	<div class="modal-body">
 		<p><strong>Let's Build It</strong> is a 3D game that simulating the machining processes related to mechanical engineering created as a final project for the MIT class 11.127 &mdash; Computer Games and Simulations for Investigation and Education. It uses Three.js, a JavaScript WebGL library for 3D graphics in a web browser. It is developed for classrooms where actual machinery is not readily available for student use and experiment.</p>
 		<p>Players are able to simulate applying different tools to an object of a certain material to construct objects matching the assigned machining job. The goals are to teach process engineering, tool familiarity, relative machine operation times.</p>
-		<p>It’s currently in the pre-Alpha stage where it is playable but still lacking a few tools and models.</p>
+		<p>It's currently in the pre-Alpha stage where it is playable but still lacking a few tools and models.</p>
 
 		<h3>Developers</h3>
 		<p>Alejandro Aguirre, Jeff Chan, Jessica Chen, Tavish Smith, and Quantum Wei</p>
@@ -339,9 +340,9 @@
 		<h3>Functions</h3>
 		<p><strong>View Rotation:</strong> To rotate the object, hold down the mouse within the workspace but outside of the object and move your mouse around. There are shortcut views of isometric, top, right and front.</p>
 		<p><strong>Object Zoom:</strong> To zoom in and out, scroll up and down.</p>
-		<p><strong>Object Grid:</strong> Click the “Show/Hide Grid” button to toggle between the two views.</p>
-		<p><strong>Download:</strong> To download the finished project file, click the “Download” button.</p>
-		<p><strong>Submit:</strong> To submit a completed project, click the “I’m Done!” button.</p>
+		<p><strong>Object Grid:</strong> Click the <i>Show/Hide Grid</i> button to toggle between the two views.</p>
+		<p><strong>Download:</strong> To download the finished project file, click the <i>Download</i> button.</p>
+		<p><strong>Submit:</strong> To submit a completed project, click the <i>I'm Done!</i> button.</p>
 
 		<h3>Tools</h3>
 		<h4>Drill Press</h4>
@@ -358,7 +359,7 @@
 		</ol>
 		<h4>Band Saw</h4>
 		<ol>
-			<li>Use the “Cut Inverse to determine where the vector bisecting the side to be discarded will point.</li>
+			<li>Use the <i>Cut Inverse</i> to determine where the vector bisecting the side to be discarded will point.</li>
 			<li>Hover over a face that is perpendicular to the plane of the cut to be made.</li>
 			<li>Mouse click to make the cut.</li>
 		</ol>
