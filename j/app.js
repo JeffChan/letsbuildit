@@ -816,7 +816,7 @@ var App = function(options) {
 
 		this.reset(false);
 		this.resetCount = 0;
-		this.setView('isometric');
+		setViewAll('isometric');
 	},
 
 	advanceSample: function() {
@@ -826,7 +826,7 @@ var App = function(options) {
 		window.timer.tick();
 		this.reset(false);
 
-		this.setView('isometric');
+		setViewAll('isometric');
 	},
 
 	loadSample: function() {

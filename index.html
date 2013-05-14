@@ -100,6 +100,11 @@
 		}
 	};
 
+	function setViewAll(view) {
+		window.app.setView(view);
+		window.demo.setView(view);
+	}
+
 	$(function() {
 
 		// $('#help').modal();
@@ -238,8 +243,7 @@
 		$('.change-view').on('click', function(e) {
 			var $el = $(this);
 			var view = $el.attr('id');
-			app.setView(view);
-			demo.setView(view);
+			setViewAll(view);
 		});
 	});
 
@@ -459,7 +463,7 @@
 
 	</div>
 
-	<strong>Import:</strong> <input type="file" id="file" />
+	<!-- <strong>Import:</strong> <input type="file" id="file" /> -->
 	</div>
 
 </div>
