@@ -409,6 +409,13 @@ var App = function(options) {
 						startPt.clone().add(normal.clone().multiplyScalar(OFFSET)),
 						pt.clone().add(normal.clone().multiplyScalar(OFFSET))
 					];
+				} else {
+					circle = that.circle({
+						radius: that.radius
+					});
+					circle.position = pt.clone().add(normal.clone().multiplyScalar(OFFSET));
+					circle.rotation = normal.clone().applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI/2);
+					that.scene.add(circle);
 				}
 
 				break;
