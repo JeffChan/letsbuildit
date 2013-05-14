@@ -212,7 +212,7 @@ var App = function(options) {
 			event.preventDefault();
 
 			if (that.locked) {
-				return false;
+				return;
 			}
 
 			var target = event.target;
@@ -327,7 +327,7 @@ var App = function(options) {
 			event.preventDefault();
 
 			if (that.locked) {
-				return false;
+				return;
 			}
 
 			var target = event.target;
