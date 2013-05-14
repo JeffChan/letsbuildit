@@ -736,7 +736,7 @@ var App = function(options) {
 				this.camera.position.set(200, 0, 0);
 				break;
 			case 'top' :
-				this.camera.position.set(0, 200, 0);
+				this.camera.position.set(0, 200, 0.01); // HACK
 				break;
 		}
 	},
