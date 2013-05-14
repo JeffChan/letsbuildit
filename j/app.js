@@ -3,7 +3,8 @@ var VIEW_ANGLE = 45,
 	FAR = 10000,
 	OFFSET = 0.1;
 
-var ONE_STAR = "&#9733;&#9734;&#9734;",
+var NO_STAR = "&#9734;&#9734;&#9734;",
+	ONE_STAR = "&#9733;&#9734;&#9734;",
 	TWO_STAR = "&#9733;&#9733;&#9734;",
 	THREE_STAR = "&#9733;&#9733;&#9733;";
 
@@ -795,7 +796,9 @@ var App = function(options) {
 
 		var stars = correct - 0.5 * incorrect - 0.5 * this.resetCount;
 
-		if (stars < 1) {
+		if (stars < 0) {
+			$('.rating').html(NO_STAR);
+		} else if (stars < 1) {
 			$('.rating').html(ONE_STAR);
 		} else if (stars < 3) {
 			$('.rating').html(TWO_STAR);
