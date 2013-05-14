@@ -54,6 +54,11 @@ canvas {
 
 
 .rating {
-  color: yellow;
-  font-size: 24px;
+	color: yellow;
+	font-size: 24px;
+}
+
+.close {
+	color: white;
+	opacity: 0.9;
 }

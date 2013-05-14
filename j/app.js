@@ -84,6 +84,11 @@ var Utils = {
 
 	unitVector: function() {
 		return new THREE.Vector3(1,1,1);
+	},
+
+	roughlyEquals: function(v1, v2) {
+		var t = 1;
+		return Math.abs(v1.x-v2.x) < t && Math.abs(v1.y-v2.y) < t && Math.abs(v1.z-v2.z) < t;
 	}
 };
 
@@ -588,7 +593,7 @@ var App = function(options) {
 			end = options.end,
 			normal = options.normal;
 
-		if (start.equals(end)) {
+		if (Utils.roughlyEquals(start, end)) {
 			end = start.clone().add(Utils.iNormal(normal).multiplyScalar(0.05));
 		}
 
