@@ -22,6 +22,84 @@
 
 	<script type="text/javascript">
 
+	window.levels = {
+		0: {
+			time: 10*60*60, // in seconds
+			series: [
+				{
+					url: 't/example1.json',
+					time: 500
+				},
+				{
+					url: 't/example2.json',
+					time: 500
+				},
+				{
+					url: 't/example1.json',
+					time: 500
+				},
+				{
+					url: 't/example2.json',
+					time: 500
+				},
+				{
+					url: 't/example2.json',
+					time: 500
+				}
+			]
+		},
+		1: {
+			time: 15*60*60, // in seconds
+			series: [
+				{
+					url: 't/example2.json',
+					time: 500
+				},
+				{
+					url: 't/example1.json',
+					time: 500
+				},
+				{
+					url: 't/example2.json',
+					time: 500
+				},
+				{
+					url: 't/example2.json',
+					time: 500
+				},
+				{
+					url: 't/example2.json',
+					time: 500
+				}
+			]
+		},
+		2: {
+			time: 20*60*60, // in seconds
+			series: [
+				{
+					url: 't/example1.json',
+					time: 500
+				},
+				{
+					url: 't/example2.json',
+					time: 500
+				},
+				{
+					url: 't/example1.json',
+					time: 500
+				},
+				{
+					url: 't/example2.json',
+					time: 500
+				},
+				{
+					url: 't/example2.json',
+					time: 500
+				}
+			]
+		}
+	};
+
 	$(function() {
 
 		// $('#help').modal();
@@ -45,6 +123,12 @@
 			locked: true
 		});
 
+		app.loadSample();
+
+		$('#done').on('click', function(e) {
+			e.preventDefault();
+			app.next();
+		});
 		$('#reset').on('click', function(e) {
 			e.preventDefault();
 			app.reset();
@@ -164,13 +248,81 @@
 
 <body>
 
+<div id="outoftime" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		<h2>Out of Time!</h2>
+	</div>
+	<div class="modal-body">
+		<p>You ran out of time! Try thinking about the order of operation. Remember "measure twice, cut once!"</p>
+	</div>
+	<div class="modal-footer">
+		<button class="btn btn-warning" data-dismiss="modal" aria-hidden="true">Restart</button>
+	</div>
+</div>
+
+<div id="levelComplete" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		<h2>Level Completed!</h2>
+	</div>
+	<div class="modal-body">
+		<h3>Score <span class="rating"></span></h3>
+		<h3>Breakdown</h3>
+		<table class="table table-bordered table-striped table-hover">
+		<thead>
+			<tr>
+				<th>Sample</th>
+				<th>Your Time (seconds)</th>
+				<th>Target Time (seconds)</th>
+			</tr>
+		</thead>
+		<tbody id="breakdown">
+			<tr>
+				<td>1</td>
+				<td class="yours">Mark</td>
+				<td class="official">Otto</td>
+			</tr>
+			<tr>
+				<td>2</td>
+				<td class="yours">Mark</td>
+				<td class="official">Otto</td>
+			</tr>
+			<tr>
+				<td>3</td>
+				<td class="yours">Mark</td>
+				<td class="official">Otto</td>
+			</tr>
+			<tr>
+				<td>4</td>
+				<td class="yours">Mark</td>
+				<td class="official">Otto</td>
+			</tr>
+			<tr>
+				<td>5</td>
+				<td class="yours">Mark</td>
+				<td class="official">Otto</td>
+			</tr>
+		</tbody>
+		</table>
+	</div>
+	<div class="modal-footer">
+		<button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Next Level</button>
+	</div>
+</div>
+
 <div id="about" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
 	<div class="modal-header">
 		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 		<h2>About</h2>
 	</div>
 	<div class="modal-body">
-		<p>TODO</p>
+		<p><strong>Let's Build It</strong> is a 3D game that simulating the machining processes related to mechanical engineering created as a final project for the MIT class 11.127 &mdash; Computer Games and Simulations for Investigation and Education. It uses Three.js, a JavaScript WebGL library for 3D graphics in a web browser. It is developed for classrooms where actual machinery is not readily available for student use and experiment.</p>
+		<p>Players are able to simulate applying different tools to an object of a certain material to construct objects matching the assigned machining job. The goals are to teach process engineering, tool familiarity, relative machine operation times.</p>
+		<p>It’s currently in the pre-Alpha stage where it is playable but still lacking a few tools and models.</p>
+
+		<h3>Developers</h3>
+		<p>Alejandro Aguirre, Jeff Chan, Jessica Chen, Tavish Smith, and Quantum Wei</p>
 	</div>
 </div>
 
@@ -180,7 +332,32 @@
 		<h2>Instructions</h2>
 	</div>
 	<div class="modal-body">
-		<p>TODO</p>
+		<h3>Functions</h3>
+		<p><strong>View Rotation:</strong> To rotate the object, hold down the mouse within the workspace but outside of the object and move your mouse around. There are shortcut views of isometric, top, right and front.</p>
+		<p><strong>Object Zoom:</strong> To zoom in and out, scroll up and down.</p>
+		<p><strong>Object Grid:</strong> Click the “Show/Hide Grid” button to toggle between the two views.</p>
+		<p><strong>Download:</strong> To download the finished project file, click the “Download” button.</p>
+		<p><strong>Submit:</strong> To submit a completed project, click the “I’m Done!” button.</p>
+
+		<h3>Tools</h3>
+		<h4>Drill Press</h4>
+		<ol>
+			<li>Use the radius slider to change the size of drill bit.</li>
+			<li>Hover over the spot you want to drill and mouse click to drill.</li>
+		</ol>
+		<h4>Mill</h4>
+		<ol>
+			<li>Use the radius slider to change the size of the end mill.</li>
+			<li>Use the depth slider to change the depth of cut.</li>
+			<li>To mill a slot: Click the start point and then click the end point.</li>
+			<li>To mill a hole: Double click</li>
+		</ol>
+		<h4>Band Saw</h4>
+		<ol>
+			<li>Use the “Cut Inverse to determine where the vector bisecting the side to be discarded will point.</li>
+			<li>Hover over a face that is perpendicular to the plane of the cut to be made.</li>
+			<li>Mouse click to make the cut.</li>
+		</ol>
 	</div>
 	<div class="modal-footer">
 		<button class="btn btn-success" data-dismiss="modal" aria-hidden="true">I'm Ready to Play!</button>
@@ -192,7 +369,8 @@
 		<span class="brand">Let's Build It</span>
 		<div class="nav-collapse">
 			<ul class="nav">
-
+				<li><a href="#">Level <span id="curLevel">1</span>&nbsp;&nbsp;
+					Sample #<span id="curSample">1</span></a></li>
 			</ul>
 			<ul class="nav pull-right">
 				<!-- <li class="dropdown">
@@ -221,7 +399,7 @@
 
 		<div class="span10">
 			<div class="row">
-				<div class="span4">
+				<div class="span3">
 					<h3>Time Left: <span id="timerText"></span></h3>
 				</div>
 				<div class="span4">
@@ -230,7 +408,7 @@
 						<div class="bar" style="width: 60%;"></div>
 					</div>
 				</div>
-				<div class="span2">
+				<div class="span3">
 					<br>
 					<a class="btn btn-success" href="#" id="done">
 						<i class="icon-ok icon-white"></i>&nbsp;

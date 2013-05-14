@@ -3,6 +3,10 @@ var VIEW_ANGLE = 45,
 	FAR = 10000,
 	OFFSET = 0.1;
 
+var ONE_STAR = "&#9733;&#9734;&#9734;",
+	TWO_STAR = "&#9733;&#9733;&#9734;",
+	THREE_STAR = "&#9733;&#9733;&#9733;";
+
 var Utils = {
 
 	clickToRay: function(x, y, width, height, camera) {
@@ -88,6 +92,8 @@ var Timer = function(options) {
 
 	timeLeft: 0,
 	totalTime: 0,
+	ticks: [],
+	lastTick: 0,
 
 	initialize: function(options) {
 		this.$container = $(options.barContainer);
@@ -97,8 +103,15 @@ var Timer = function(options) {
 	},
 
 	reset: function(seconds) {
-		this.timeLeft = this.totalTime = seconds * 1000;
+		this.timeLeft = this.totalTime = this.lastTick = seconds * 1000;
 		this.updateTime();
+		this.ticks = [];
+	},
+
+	tick: function() {
+		var tick =  this.lastTick - this.timeLeft;
+		this.ticks.push(tick);
+		this.lastTick = this.timeLeft;
 	},
 
 	subtractTime: function(seconds) {
@@ -143,7 +156,10 @@ var App = function(options) {
 	depth: 10,
 	cutInverse: false,
 
-	resetCount: -1,
+	resetCount: 0,
+
+	curSample: 0,
+	curLevel: 0,
 
 	initialize: function(options) {
 		options = options || {};
@@ -170,7 +186,7 @@ var App = function(options) {
 		this.pointLight = new THREE.PointLight(0xffffff);
 		this.scene.add(this.pointLight);
 
-		this.controls = new THREE.TrackballControls(this.camera);
+		this.controls = new THREE.TrackballControls(this.camera, $('.belly')[0]);
 		var controls = this.controls;
 		// controls.enabled = false;
 		controls.rotateSpeed = 2.0;
@@ -188,7 +204,7 @@ var App = function(options) {
 		});
 
 		this.size = size = 100;
-		var cube = this.reset();
+		var cube = this.reset(false);
 
 		this.fake = cube.clone();
 		this.fake.visible = false;
@@ -196,6 +212,8 @@ var App = function(options) {
 
 		this.grid = this.generateGrid(size);
 		this.scene.add(this.grid);
+
+		this.setView('isometric');
 
 		this.animate(); // Begin animation loop
 
@@ -318,6 +336,11 @@ var App = function(options) {
 				}
 
 				break;
+			}
+
+			if (window.timer.timeLeft == 0) {
+				$('#outoftime').modal();
+				that.resetLevel();
 			}
 
 		});
@@ -676,16 +699,22 @@ var App = function(options) {
 	},
 
 	import: function(json) {
-		var parsed = (new THREE.JSONLoader()).parse(JSON.parse(json));
+		var parsed;
+		if (typeof json === 'string') {
+			parsed = (new THREE.JSONLoader()).parse(JSON.parse(json));
+		} else {
+			parsed = json;
+		}
 		var mesh = new THREE.Mesh(parsed.geometry, this.material);
 		return mesh;
 	},
 
-	reset: function() {
+	reset: function(count) {
 		var size = this.size;
 		var cube = new THREE.Mesh(new THREE.CubeGeometry(size,size,size), this.material);
 		this.redrawPiece(cube);
-		this.resetCount++;
+		if (count !== false)
+			this.resetCount++;
 		return cube;
 	},
 
@@ -721,6 +750,93 @@ var App = function(options) {
 		default :
 			return [];
 		}
+	},
+
+	resetLevel: function() {
+		console.log('Reset level');
+		this.curSample = 0;
+		this.loadSample();
+		window.timer.reset(window.levels[this.curLevel].time);
+
+		this.reset(false);
+		this.resetCount = 0;
+
+		this.setView('isometric');
+	},
+
+	next: function() {
+		if (this.curSample == window.levels[this.curLevel].series.length-1) {
+			if (this.curLevel == Object.keys(window.levels).length-1) {
+				console.log('No more levels');
+				return;
+			}
+			this.advanceLevel();
+		} else {
+			this.advanceSample();
+		}
+	},
+
+	advanceLevel: function() {
+		window.timer.tick();
+
+		var correct = 0, incorrect = 0;
+		$('#breakdown td.yours').each(_.bind(function(i, el) {
+			var $el = $(el);
+			var yours = Math.round(window.timer.ticks[i] / 1000);
+			var target = window.levels[this.curLevel].series[i].time;
+			$el.text(yours);
+			$el.next().text(target);
+			if (Math.abs(yours-target)/target >= 0.25) {
+				incorrect += 1;
+			} else {
+				correct += 1;
+			}
+		}, this));
+
+		var stars = correct - 0.5 * incorrect - 0.5 * this.resetCount;
+
+		if (stars < 1) {
+			$('.rating').html(ONE_STAR);
+		} else if (stars < 3) {
+			$('.rating').html(TWO_STAR);
+		} else if (stars <= 5) {
+			$('.rating').html(THREE_STAR);
+		}
+
+		$('#levelComplete').modal();
+		console.log('Advance level');
+
+		this.curLevel++;
+		this.curSample = 0;
+		this.loadSample();
+		window.timer.reset(window.levels[this.curLevel].time);
+
+		this.reset(false);
+		this.resetCount = 0;
+		this.setView('isometric');
+	},
+
+	advanceSample: function() {
+		console.log('Advance sample');
+		this.curSample++;
+		this.loadSample();
+		window.timer.tick();
+		this.reset(false);
+
+		this.setView('isometric');
+	},
+
+	loadSample: function() {
+		var sample = window.levels[this.curLevel].series[this.curSample];
+		$.ajax({
+			url: sample.url,
+			success: function(data) {
+				window.demo.redrawPiece(window.demo.import(data));
+			},
+			dataType: 'html'
+		});
+		$('#curLevel').text(this.curLevel+1);
+		$('#curSample').text(this.curSample+1);
 	}
 
 	};

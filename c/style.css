@@ -51,3 +51,9 @@ canvas {
 .selected-saw .cutInverse {
 	display: block;
 }
+
+
+.rating {
+  color: yellow;
+  font-size: 24px;
+}
