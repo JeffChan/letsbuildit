@@ -13,9 +13,10 @@ requirejs.config({
     'bootstrap-slider': 'lib/bootstrap-slider'
   },
   shim: {
+    'underscore': { exports: '_' },
     'bootstrap': { deps: ['jquery'] },
     'bootstrap-slider': { deps: ['jquery', 'bootstrap'] }
   }
 });
 
-requirejs(['app']);
+requirejs(['app', 'levels']);

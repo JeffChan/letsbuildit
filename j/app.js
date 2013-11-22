@@ -1,4 +1,4 @@
-define(['jquery', 'bootstrap', 'bootstrap-slider', 'underscore', 'filesaver'], function ($) {
+define(['jquery', 'levels', 'bootstrap', 'bootstrap-slider', 'underscore', 'filesaver'], function ($, levels) {
 
 var VIEW_ANGLE = 45,
 	NEAR = 0.1,
@@ -771,7 +771,7 @@ var App = function(options) {
 		console.log('Reset level');
 		this.curSample = 0;
 		this.loadSample();
-		window.timer.reset(window.levels[this.curLevel].time);
+		window.timer.reset(levels[this.curLevel].time);
 
 		this.reset(false);
 		this.resetCount = 0;
@@ -780,8 +780,8 @@ var App = function(options) {
 	},
 
 	next: function() {
-		if (this.curSample == window.levels[this.curLevel].series.length-1) {
-			if (this.curLevel == Object.keys(window.levels).length-1) {
+		if (this.curSample == levels[this.curLevel].series.length-1) {
+			if (this.curLevel == Object.keys(levels).length-1) {
 				console.log('No more levels');
 				return;
 			}
@@ -798,7 +798,7 @@ var App = function(options) {
 		$('#breakdown td.yours').each(_.bind(function(i, el) {
 			var $el = $(el);
 			var yours = Math.round(window.timer.ticks[i] / 1000);
-			var target = window.levels[this.curLevel].series[i].time;
+			var target = levels[this.curLevel].series[i].time;
 			$el.text(yours);
 			$el.next().text(target);
 			if (Math.abs(yours-target)/target >= 0.25) {
@@ -826,7 +826,7 @@ var App = function(options) {
 		this.curLevel++;
 		this.curSample = 0;
 		this.loadSample();
-		window.timer.reset(window.levels[this.curLevel].time);
+		window.timer.reset(levels[this.curLevel].time);
 
 		this.reset(false);
 		this.resetCount = 0;
@@ -844,7 +844,7 @@ var App = function(options) {
 	},
 
 	loadSample: function() {
-		var sample = window.levels[this.curLevel].series[this.curSample];
+		var sample = levels[this.curLevel].series[this.curSample];
 		$.ajax({
 			url: sample.url,
 			success: function(data) {
@@ -874,7 +874,7 @@ $(function() {
 	window.timer = new Timer({
 		barContainer: '#timerBar',
 		textContainer: '#timerText',
-		startTime: window.levels[0].time // in seconds
+		startTime: levels[0].time // in seconds
 	});
 
 	window.app = new App({
