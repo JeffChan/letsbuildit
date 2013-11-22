@@ -3,7 +3,10 @@
 requirejs.config({
   baseUrl: 'j',
   paths: {
-    'jquery': '//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min',
+    'jquery': [
+      '//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min',
+      'lib/jquery-2.0.3'
+    ],
     'bootstrap': 'lib/bootstrap.min',
     'bootstrap-slider': 'lib/bootstrap-slider'
   },
