@@ -19,4 +19,4 @@ requirejs.config({
   }
 });
 
-requirejs(['app', 'levels']);
+requirejs(['app']);
