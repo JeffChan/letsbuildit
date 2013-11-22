@@ -7,6 +7,7 @@ requirejs.config({
       '//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min',
       'lib/jquery-2.0.3'
     ],
+    'underscore': 'lib/underscore',
     'bootstrap': 'lib/bootstrap.min',
     'bootstrap-slider': 'lib/bootstrap-slider'
   },
