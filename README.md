@@ -7,3 +7,4 @@ letsbuildit
 - use m.js maybe?
 - upgrade bootstrap
 - leapmotion
+- add some tests... if possible
