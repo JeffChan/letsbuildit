@@ -8,6 +8,7 @@ requirejs.config({
       'lib/jquery-2.0.3'
     ],
     'underscore': 'lib/underscore',
+    'filesaver': 'lib/FileSaver',
     'bootstrap': 'lib/bootstrap.min',
     'bootstrap-slider': 'lib/bootstrap-slider'
   },

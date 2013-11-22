@@ -1,4 +1,4 @@
-define(['jquery', 'bootstrap', 'bootstrap-slider', 'underscore'], function ($) {
+define(['jquery', 'bootstrap', 'bootstrap-slider', 'underscore', 'filesaver'], function ($) {
 
 var VIEW_ANGLE = 45,
 	NEAR = 0.1,
