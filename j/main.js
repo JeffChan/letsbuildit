@@ -13,12 +13,14 @@ requirejs.config({
     'bootstrap-slider': 'lib/bootstrap-slider',
     'three': 'three/three.min',
     'three.CSG': 'three/ThreeCSG',
+    'three.GeometryExporter': 'three/GeometryExporter',
     'three.TrackballControls': 'three/TrackballControls',
   },
   shim: {
     'underscore': { exports: '_' },
     'three': { exports: 'THREE' },
     'three.CSG': { deps: ['three'], exports: 'ThreeBSP' },
+    'three.GeometryExporter': { deps: ['three'] },
     'three.TrackballControls': { deps: ['three'] },
     'bootstrap': { deps: ['jquery'] },
     'bootstrap-slider': { deps: ['jquery', 'bootstrap'] }

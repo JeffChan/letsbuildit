@@ -1,4 +1,15 @@
-define(['jquery', 'levels', 'bootstrap', 'bootstrap-slider', 'underscore', 'filesaver'], function ($, levels) {
+define([
+	'jquery',
+	'levels',
+	'bootstrap',
+	'bootstrap-slider',
+	'underscore',
+	'filesaver',
+	'three',
+	'three.GeometryExporter',
+	'three.CSG',
+	'three.TrackballControls'
+], function ($, levels) {
 
 var VIEW_ANGLE = 45,
 	NEAR = 0.1,
