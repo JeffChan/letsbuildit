@@ -27,4 +27,4 @@ requirejs.config({
   }
 });
 
-requirejs(['app']);
+requirejs(['app/app']);

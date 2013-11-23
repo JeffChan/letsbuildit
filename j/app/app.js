@@ -1,6 +1,6 @@
 define([
 	'jquery',
-	'levels',
+	'app/levels',
 	'bootstrap',
 	'bootstrap-slider',
 	'underscore',
