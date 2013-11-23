@@ -1,17 +1,17 @@
 define([
 	'jquery',
+	'underscore',
 	'app/levels',
 	'app/utils',
 	'app/timer',
 	'bootstrap',
 	'bootstrap-slider',
-	'underscore',
 	'filesaver',
 	'three',
 	'three.GeometryExporter',
 	'three.CSG',
 	'three.TrackballControls'
-], function ($, levels, Utils, Timer) {
+], function ($, _, levels, Utils, Timer) {
 
 var VIEW_ANGLE = 45,
 	NEAR = 0.1,
