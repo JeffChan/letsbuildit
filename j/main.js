@@ -3,10 +3,7 @@
 requirejs.config({
   baseUrl: 'j',
   paths: {
-    'jquery': [
-      '//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min',
-      'lib/jquery-2.0.3'
-    ],
+    'jquery': 'lib/jquery-2.0.3',
     'underscore': 'lib/underscore',
     'filesaver': 'lib/FileSaver',
     'bootstrap': 'lib/bootstrap.min',
