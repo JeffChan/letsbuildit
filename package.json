@@ -1,0 +1,13 @@
+{
+  "name": "letsbuildit",
+  "description": "buildin' stuff",
+  "version": "0.0.2",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jeffchan/letsbuildit.git"
+  },
+  "devDependencies": {
+    "grunt": "latest",
+    "grunt-contrib-requirejs": "~0.4.1"
+  }
+}
