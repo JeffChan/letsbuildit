@@ -2,6 +2,7 @@ define([
 	'jquery',
 	'app/levels',
 	'app/utils',
+	'app/timer',
 	'bootstrap',
 	'bootstrap-slider',
 	'underscore',
@@ -10,7 +11,7 @@ define([
 	'three.GeometryExporter',
 	'three.CSG',
 	'three.TrackballControls'
-], function ($, levels, Utils) {
+], function ($, levels, Utils, Timer) {
 
 var VIEW_ANGLE = 45,
 	NEAR = 0.1,
@@ -21,62 +22,6 @@ var NO_STAR = "&#9734;&#9734;&#9734;",
 	ONE_STAR = "&#9733;&#9734;&#9734;",
 	TWO_STAR = "&#9733;&#9733;&#9734;",
 	THREE_STAR = "&#9733;&#9733;&#9733;";
-
-var Timer = function(options) {
-
-	var that = {
-
-	timeLeft: 0,
-	totalTime: 0,
-	ticks: [],
-	lastTick: 0,
-
-	initialize: function(options) {
-		this.$container = $(options.barContainer);
-		this.$bar = this.$container.find('.bar');
-		this.$text = $(options.textContainer);
-		this.reset(options.startTime);
-	},
-
-	reset: function(seconds) {
-		this.timeLeft = this.totalTime = this.lastTick = seconds * 1000;
-		this.updateTime();
-		this.ticks = [];
-	},
-
-	tick: function() {
-		var tick =  this.lastTick - this.timeLeft;
-		this.ticks.push(tick);
-		this.lastTick = this.timeLeft;
-	},
-
-	subtractTime: function(seconds) {
-		this.timeLeft -= seconds * 1000;
-		if (this.timeLeft < 0) {
-			this.timeLeft = 0;
-		}
-		this.updateTime();
-	},
-
-	updateTime: function() {
-		var percentage = Math.round(this.timeLeft * 100 / this.totalTime);
-		this.$bar.css('width', percentage+'%');
-		this.$text.text(Math.round(this.timeLeft / 1000) + " s");
-
-		if (percentage < 20) {
-			this.$container.removeClass('progress-warning').addClass('progress-danger');
-		} else if (percentage < 50) {
-			this.$container.addClass('progress-warning').removeClass('progress-danger');
-		} else {
-			this.$container.removeClass('progress-warning progress-danger');
-		}
-	}
-
-	};
-
-	that.initialize(options);
-	return that;
-};
 
 var App = function(options) {
 
