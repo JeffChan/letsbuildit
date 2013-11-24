@@ -80,8 +80,9 @@ var App = function(options) {
 		controls.keys = [ 65, 83, 68 ];
 		this.controls.addEventListener('change', _.bind(this.render, this));
 
-		this.material = new THREE.MeshPhongMaterial({
-			color: 'silver'
+		this.material = new THREE.MeshLambertMaterial({
+			color: 'silver',
+			shading: THREE.NoShading
 		});
 
 		this.size = size = 100;
@@ -742,7 +743,7 @@ function setViewAll(view) {
 
 $(function() {
 
-	$('#help').modal();
+	// $('#help').modal();
 
 	window.timer = new Timer({
 		barContainer: '#timerBar',
