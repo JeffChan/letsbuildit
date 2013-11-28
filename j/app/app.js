@@ -53,6 +53,7 @@ var App = function(options) {
 
 		this.renderer = new THREE.WebGLRenderer({ antialias: true });
 		this.renderer.setSize(this.WIDTH, this.HEIGHT);
+		this.renderer.setClearColor(0x29333c);
 		this.$canvas = $(this.renderer.domElement);
 		this.$container.children('h4').after(this.renderer.domElement);
 
