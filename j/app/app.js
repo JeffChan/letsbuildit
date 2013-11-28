@@ -808,6 +808,7 @@ $(function() {
 		$tool.addClass('btn-info');
 	});
 
+	/* disable descriptions
 	var descriptions = {
 		mill: 'A rotary tool used for shaping and cutting grooves <a href="http://www.youtube.com/watch?v=j0vRYe9uvnI">YouTube Video</a>',
 		saw: 'A power saw used for cutting materials <a href="http://www.youtube.com/watch?v=ZYlLIp5urJQ">YouTube Video</a>',
@@ -823,7 +824,7 @@ $(function() {
 			title: $tool.text(),
 			content: descriptions[i]
 		});
-	});
+	}); */
 
 	$('.disabled-tool').popover({
 		trigger: 'hover',
