@@ -185,7 +185,8 @@ var App = function(options) {
 						radius: that.radius
 					});
 					x.position = pt.clone().add(normal.clone().multiplyScalar(OFFSET)); // offset so the cross shows up
-					x.rotation = normal.clone().applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI/2);
+					var rotation = normal.clone().applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI/2);
+					x.rotation.fromArray(rotation.toArray());
 					that.scene.add(x);
 					that.render();
 					highlighted = x;
@@ -197,7 +198,7 @@ var App = function(options) {
 
 				if (plane) {
 					var dir = normal.clone().applyMatrix3(Utils.ZXYMatrix());
-					var length = that.size
+					var length = that.size;
 					var position = plane.position.clone();
 					var shift = dir.multiplyScalar(length/2);
 
@@ -210,7 +211,8 @@ var App = function(options) {
 						position: position.sub(shift),
 						length: length
 					});
-					saw.rotation = plane.rotation.clone().applyMatrix3(Utils.YZXMatrix());
+					var rotation = (new THREE.Vector3()).fromArray(plane.rotation.toArray()).applyMatrix3(Utils.YZXMatrix());
+					saw.rotation.fromArray(rotation.toArray());
 					var output = that.subtract(that.piece, saw);
 					that.redrawPiece(output);
 
@@ -277,7 +279,8 @@ var App = function(options) {
 					radius: that.radius
 				});
 				circle.position = pt.clone().add(normal.clone().multiplyScalar(OFFSET));
-				circle.rotation = normal.clone().applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI/2);
+				var rotation = normal.clone().applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI/2);
+				circle.rotation.fromArray(rotation.toArray());
 				that.scene.add(circle);
 				break;
 
@@ -295,7 +298,8 @@ var App = function(options) {
 						radius: that.radius
 					});
 					circle.position = pt.clone().add(normal.clone().multiplyScalar(OFFSET));
-					circle.rotation = normal.clone().applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI/2);
+					var rotation = normal.clone().applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI/2);
+					circle.rotation.fromArray(rotation.toArray());
 					that.scene.add(circle);
 				}
 
@@ -313,7 +317,8 @@ var App = function(options) {
 					})
 				});
 				plane.position = pt.clone().sub(normal.clone().multiplyScalar(that.size/2));
-				plane.rotation = normal.clone().applyMatrix3(Utils.ZYXMatrix()).multiplyScalar(Math.PI/2);
+				var rotation = normal.clone().applyMatrix3(Utils.ZYXMatrix()).multiplyScalar(Math.PI/2);
+				plane.rotation.fromArray(rotation.toArray());
 				that.scene.add(plane);
 
 				var sign = that.cutInverse ? 1 : -1;
@@ -459,7 +464,8 @@ var App = function(options) {
 			normal = options.normal.clone();
 		var cylinderGeometry = new THREE.CylinderGeometry(size, size, depth, 16, 16, false);
 		var cylinder = new THREE.Mesh(cylinderGeometry, this.material);
-		cylinder.rotation = normal.applyMatrix3(Utils.ZYXMatrix()).multiplyScalar(Math.PI/2);
+		var rotation = normal.applyMatrix3(Utils.ZYXMatrix()).multiplyScalar(Math.PI/2);
+		cylinder.rotation.fromArray(rotation.toArray());
 		cylinder.position = options.position;
 		return cylinder;
 	},
@@ -497,7 +503,7 @@ var App = function(options) {
 
 		var cubeGeometry = new THREE.CubeGeometry(dist, options.length, options.depth);
 		var cube = new THREE.Mesh(cubeGeometry, this.material);
-		cube.rotation = rotation;
+		cube.rotation.fromArray(rotation.toArray());
 		cube.position = Utils.getMidpoint(start, end);
 
 		var round1 = this.drill({
@@ -526,7 +532,8 @@ var App = function(options) {
 
 		var cubeGeometry = new THREE.CubeGeometry(this.size*2, length, this.size*2);
 		var cube = new THREE.Mesh(cubeGeometry, this.material);
-		cube.rotation = Utils.map(normal, Math.abs).applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI/2);
+		var rotation = Utils.map(normal, Math.abs).applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI/2);
+		cube.rotation.fromArray(rotation.toArray());
 		cube.position = position;
 
 		return cube;
@@ -555,7 +562,7 @@ var App = function(options) {
 				pos = normal.clone().applyMatrix3(Utils.YXZMatrix()).multiplyScalar(size/2);
 
 			face = plane.clone();
-			face.rotation = rot;
+			face.rotation.fromArray(rot.toArray());
 			face.position = pos;
 			group.add(face);
 
