@@ -8,7 +8,7 @@ requirejs.config({
     'filesaver': 'lib/FileSaver',
     'bootstrap': 'lib/bootstrap.min',
     'bootstrap-slider': 'lib/bootstrap-slider',
-    'three': 'three/three.min',
+    'three': 'three/three',
     'three.CSG': 'three/ThreeCSG',
     'three.GeometryExporter': 'three/GeometryExporter',
     'three.TrackballControls': 'three/TrackballControls',
