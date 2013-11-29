@@ -1,4 +1,4 @@
-define(['three', 'app/utils'], function (THREE, Utils) {
+define(['three', 'underscore', 'app/utils'], function (THREE, _, Utils) {
   var Shapes = {
 
     cylinder: function (options) {
