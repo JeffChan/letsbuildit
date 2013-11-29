@@ -18,11 +18,6 @@ define([
 	'three.TrackballControls'
 ], function ($, _, Levels, Constants, Utils, Shapes, Tool, Drill, Mill, Saw, Timer) {
 
-var NO_STAR = "&#9734;&#9734;&#9734;",
-	ONE_STAR = "&#9733;&#9734;&#9734;",
-	TWO_STAR = "&#9733;&#9733;&#9734;",
-	THREE_STAR = "&#9733;&#9733;&#9733;";
-
 var App = function(options) {
 
 	var that = {
@@ -160,9 +155,11 @@ var App = function(options) {
 
 		var intersects = ray.intersectObjects(this.intersectsMode());
 
-		if (intersects.length == 0) {
-			var tool = this.tools['mill'];
-			tool.unintersect();
+		if (intersects.length === 0) {
+			var tool = this.curTool;
+			if (tool) {
+				tool.unintersect();
+			}
 			return;
 		}
 
@@ -379,13 +376,13 @@ var App = function(options) {
 		var stars = correct - 0.5 * incorrect - 0.5 * this.resetCount;
 
 		if (stars < 0) {
-			$('.rating').html(NO_STAR);
+			$('.rating').html(Constants.NO_STAR);
 		} else if (stars < 1) {
-			$('.rating').html(ONE_STAR);
+			$('.rating').html(Constants.ONE_STAR);
 		} else if (stars < 3) {
-			$('.rating').html(TWO_STAR);
+			$('.rating').html(Constants.TWO_STAR);
 		} else if (stars <= 5) {
-			$('.rating').html(THREE_STAR);
+			$('.rating').html(Constants.THREE_STAR);
 		}
 
 		$('#levelComplete').modal();

@@ -35,6 +35,19 @@ define([
 
     intersect: function (raw, cut) {
       return this.op(raw, cut, 'intersect');
+    },
+
+    /* Abstract functions */
+    show: function (position, normal) {},
+    hide: function () {},
+    unintersect: function () {},
+
+    click: function (piece, position, normal) {
+      return null;
+    },
+
+    getTime: function () {
+      return 0;
     }
 
   };
