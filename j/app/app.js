@@ -3,6 +3,7 @@ define([
 	'underscore',
 	'app/levels',
 	'app/utils',
+	'app/shapes',
 	'app/timer',
 	'bootstrap',
 	'bootstrap-slider',
@@ -101,10 +102,10 @@ var App = function(options) {
 		this.animate(); // Begin animation loop
 
 		var highlighted = null;
-		var line = this.line();
+		var line = Shapes.line();
 		line.visible = false;
 		this.scene.add(line);
-		var circle = this.circle();
+		var circle = Shapes.circle();
 
 		var plane = null;
 
@@ -141,7 +142,7 @@ var App = function(options) {
 			switch (that.mode) {
 			case 'drill':
 
-				var output = that.subtract(that.piece, that.drill({
+				var output = that.subtract(that.piece, Shapes.cylinder({
 					radius: that.radius,
 					position: pt,
 					depth: that.size * 2,
@@ -181,8 +182,8 @@ var App = function(options) {
 					}
 
 				} else {
-					// var x = that.cross({color: 0xff0000});
-					var x = that.circle({
+					// var x = Shapes.cross({color: 0xff0000});
+					var x = Shapes.circle({
 						radius: that.radius
 					});
 					x.position = pt.clone().add(normal.clone().multiplyScalar(OFFSET)); // offset so the cross shows up
@@ -276,7 +277,7 @@ var App = function(options) {
 					pt.clone().add(normal.clone().multiplyScalar(500))
 				];
 
-				circle = that.circle({
+				circle = Shapes.circle({
 					radius: that.radius
 				});
 				circle.position = pt.clone().add(normal.clone().multiplyScalar(OFFSET));
@@ -295,7 +296,7 @@ var App = function(options) {
 						pt.clone().add(normal.clone().multiplyScalar(OFFSET))
 					];
 				} else {
-					circle = that.circle({
+					circle = Shapes.circle({
 						radius: that.radius
 					});
 					circle.position = pt.clone().add(normal.clone().multiplyScalar(OFFSET));
@@ -307,7 +308,7 @@ var App = function(options) {
 				break;
 
 			case 'saw':
-				plane = that.plane({
+				plane = Shapes.plane({
 					segments: 5,
 					size: 200,
 					normal: normal,
@@ -338,7 +339,7 @@ var App = function(options) {
 		});
 	},
 
-	op: function(raw, cut, op) {
+	op: function (raw, cut, op) {
 		var rawBSP = new ThreeBSP(raw),
 			cutBSP = new ThreeBSP(cut);
 
@@ -348,19 +349,19 @@ var App = function(options) {
 		return result;
 	},
 
-	subtract: function(raw, cut) {
+	subtract: function (raw, cut) {
 		return this.op(raw, cut, 'subtract');
 	},
 
-	union: function() {
+	union: function () {
 		var result = arguments[0];
-		for (var i=1; i < arguments.length; i++) {
+		for (var i = 1; i < arguments.length; i++) {
 			result = this.op(result, arguments[i], 'union');
 		}
 		return result;
 	},
 
-	intersect: function(raw, cut) {
+	intersect: function (raw, cut) {
 		return this.op(raw, cut, 'intersect');
 	},
 
@@ -388,87 +389,6 @@ var App = function(options) {
 		if (this.oldPiece) {
 			this.redrawPiece(this.oldPiece);
 		}
-	},
-
-	line: function(options) {
-		options = options || {};
-		var vertices = options.vertices || [new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 1)];
-
-		var geometry = new THREE.Geometry();
-		geometry.vertices = vertices;
-
-		var redLineMaterial = new THREE.LineBasicMaterial({
-			color: options.color || 0xff0000,
-			linewidth: options.width || 2
-		});
-		return new THREE.Line(geometry, redLineMaterial);
-	},
-
-	cross: function(options) {
-		var lineMaterial = new THREE.LineBasicMaterial({
-			color: 0xff0000
-		});
-		var cross = new THREE.Object3D();
-		var crossGeometry, crossLine;
-
-		crossGeometry = new THREE.Geometry();
-		crossGeometry.vertices = [new THREE.Vector3(1, 1, 0), new THREE.Vector3(-1, -1, 0)];
-		crossLine = new THREE.Line(crossGeometry, lineMaterial);
-		cross.add(crossLine);
-
-		crossGeometry = new THREE.Geometry();
-		crossGeometry.vertices = [new THREE.Vector3(1, -1, 0), new THREE.Vector3(-1, 1, 0)];
-		crossLine = new THREE.Line(crossGeometry, lineMaterial);
-		cross.add(crossLine);
-
-		return cross;
-	},
-
-	circle: function(options) {
-		options = options || {};
-
-		var resolution = options.segments || 32;
-		var radius = options.radius || 4;
-		var size = 360 / resolution;
-
-		var geometry = new THREE.Geometry();
-		var material = new THREE.LineBasicMaterial({
-			color: options.color || 0xff0000,
-			opacity: 1.0,
-			linewidth: 2.0
-		});
-
-		for (var i = 0; i <= resolution; i++) {
-		    var segment = (i * size) * Math.PI / 180;
-		    geometry.vertices.push(new THREE.Vector3(Math.cos(segment)*radius, Math.sin(segment)*radius, 0));
-		}
-
-		return new THREE.Line( geometry, material);
-	},
-
-	plane: function(options) {
-		options = options || {};
-
-		var size = options.size;
-		var material = options.material || new THREE.MeshBasicMaterial({
-			color: options.color
-		});
-		var segments = options.segments || 10;
-		var plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size, segments, segments), material);
-
-		return plane;
-	},
-
-	drill: function(options) {
-		var size = options.radius,
-			depth = options.depth,
-			normal = options.normal.clone();
-		var cylinderGeometry = new THREE.CylinderGeometry(size, size, depth, 16, 16, false);
-		var cylinder = new THREE.Mesh(cylinderGeometry, this.material);
-		var rotation = normal.applyMatrix3(Utils.ZYXMatrix()).multiplyScalar(Math.PI/2);
-		cylinder.rotation.fromArray(rotation.toArray());
-		cylinder.position = options.position;
-		return cylinder;
 	},
 
 	mill: function(options) {
@@ -507,14 +427,14 @@ var App = function(options) {
 		cube.rotation.fromArray(rotation.toArray());
 		cube.position = Utils.getMidpoint(start, end);
 
-		var round1 = this.drill({
+		var round1 = Shapes.cylinder({
 			radius: options.length/2,
 			depth: options.depth,
 			normal: normal,
 			position: start.clone()
 		});
 
-		var round2 = this.drill({
+		var round2 = Shapes.cylinder({
 			radius: options.length/2,
 			depth: options.depth,
 			normal: normal,
@@ -545,7 +465,7 @@ var App = function(options) {
 	},
 
 	generateGrid: function(size) {
-		var plane = this.plane({
+		var plane = Shapes.plane({
 			size: size,
 			segments: 10,
 			material: new THREE.MeshBasicMaterial({
