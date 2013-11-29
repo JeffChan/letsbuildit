@@ -87,14 +87,14 @@ var App = function(options) {
 			shading: THREE.NoShading
 		});
 
-		this.size = size = 100;
+		this.size = 100;
 		var cube = this.reset(false);
 
 		this.fake = cube.clone();
 		this.fake.visible = false;
 		this.scene.add(this.fake);
 
-		this.grid = this.generateGrid(size);
+		this.grid = Shapes.grid({size: this.size});
 		this.scene.add(this.grid);
 
 		this.setView('isometric');
@@ -462,37 +462,6 @@ var App = function(options) {
 
 	sander: function(options) {
 
-	},
-
-	generateGrid: function(size) {
-		var plane = Shapes.plane({
-			size: size,
-			segments: 10,
-			material: new THREE.MeshBasicMaterial({
-				color:'greenyellow',
-				wireframe: true,
-				wireframeLinewidth: 2
-			})
-		});
-
-		var group = new THREE.Object3D();
-
-		_.each(Utils.XYZNormals(), function(normal) {
-			var face,
-				rot = normal.clone().multiplyScalar(Math.PI/2),
-				pos = normal.clone().applyMatrix3(Utils.YXZMatrix()).multiplyScalar(size/2);
-
-			face = plane.clone();
-			face.rotation.fromArray(rot.toArray());
-			face.position = pos;
-			group.add(face);
-
-			face = face.clone();
-			face.position.multiplyScalar(-1);
-			group.add(face);
-		});
-
-		return group;
 	},
 
 	showGrid: function(show) {

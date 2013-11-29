@@ -80,6 +80,40 @@ define(['three', 'app/utils'], function (THREE, Utils) {
       var plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size, segments, segments), material);
 
       return plane;
+    },
+
+    grid: function (options) {
+      options = options || {};
+
+      var size = options.size;
+      var plane = Shapes.plane({
+        size: size,
+        segments: 10,
+        material: new THREE.MeshBasicMaterial({
+          color: 'greenyellow',
+          wireframe: true,
+          wireframeLinewidth: 2
+        })
+      });
+
+      var group = new THREE.Object3D();
+
+      _.each(Utils.XYZNormals(), function (normal) {
+        var face,
+          rot = normal.clone().multiplyScalar(Math.PI / 2),
+          pos = normal.clone().applyMatrix3(Utils.YXZMatrix()).multiplyScalar(size / 2);
+
+        face = plane.clone();
+        face.rotation.fromArray(rot.toArray());
+        face.position = pos;
+        group.add(face);
+
+        face = face.clone();
+        face.position.multiplyScalar(-1);
+        group.add(face);
+      });
+
+      return group;
     }
 
   };
