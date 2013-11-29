@@ -145,40 +145,19 @@ var App = function(options) {
 			}
 
 			var i = intersects[0];
-			var pt = i.point;
 			var normal = i.face.normal;
 
 			if (!Utils.isXYZ(normal)) {
 				return;
 			}
 
-			switch (that.mode) {
-			case 'drill':
-
-				var tool = that.tools['drill'];
-				that.redrawPiece(tool.click(that.piece, pt, normal));
-
-				window.timer.subtractTime(tool.getTime());
-
-				break;
-
-			case 'mill':
-				var tool = that.tools['mill'];
-				var draw = tool.click(that.piece, pt, normal);
+			var tool = that.curTool;
+			if (tool) {
+				var draw = tool.click(that.piece, i.point, normal);
 				if (draw) {
 					that.redrawPiece(draw);
 					window.timer.subtractTime(tool.getTime());
 				}
-
-				break;
-			case 'saw':
-				var tool = that.tools['saw'];
-				var draw = tool.click(that.piece, pt, normal);
-				if (draw) {
-					that.redrawPiece(draw);
-					window.timer.subtractTime(tool.getTime());
-				}
-				break;
 			}
 
 			if (window.timer.timeLeft == 0) {
@@ -201,10 +180,9 @@ var App = function(options) {
 
 			var intersects = ray.intersectObjects(that.intersectsMode());
 
-			// TEMP
-			that.tools['drill'].hide();
-			that.tools['mill'].hide();
-			that.tools['saw'].hide();
+			_.each(that.tools, function (tool) {
+				tool.hide();
+			});
 
 			if (intersects.length == 0) {
 				line.visible = false;
@@ -216,7 +194,6 @@ var App = function(options) {
 			// that.$canvas.css('cursor', 'crosshair');
 
 			var i = intersects[0];
-			var pt = i.point;
 			var normal = i.face.normal;
 
 			if (!Utils.isXYZ(normal)) {
@@ -224,21 +201,9 @@ var App = function(options) {
 				return;
 			}
 
-			switch (that.mode) {
-			case 'drill':
-				var tool = that.tools['drill'];
-				tool.show(pt, normal);
-				break;
-
-			case 'mill':
-				var tool = that.tools['mill'];
-				tool.show(pt, normal);
-				break;
-
-			case 'saw':
-				var tool = that.tools['saw'];
-				tool.show(pt, normal);
-				break;
+			var tool = that.curTool;
+			if (tool) {
+				tool.show(i.point, normal);
 			}
 
 			that.render();
@@ -317,6 +282,7 @@ var App = function(options) {
 
 	setMode: function(mode) {
 		this.mode = mode;
+		this.curTool = this.tools[mode];
 	},
 
 	setView: function(view) {
