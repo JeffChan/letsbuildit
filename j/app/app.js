@@ -1,23 +1,21 @@
 define([
 	'jquery',
 	'underscore',
-	'app/levels',
+	'app/settings/levels',
+	'app/settings/constants',
 	'app/utils',
 	'app/shapes',
+	'app/tools/tool',
+	'app/tools/drill',
+	'app/tools/mill',
 	'app/timer',
 	'bootstrap',
 	'bootstrap-slider',
 	'filesaver',
 	'three',
 	'three.GeometryExporter',
-	'three.CSG',
 	'three.TrackballControls'
-], function ($, _, levels, Utils, Timer) {
-
-var VIEW_ANGLE = 45,
-	NEAR = 0.1,
-	FAR = 10000,
-	OFFSET = 0.1;
+], function ($, _, Levels, Constants, Utils, Shapes, Tool, Drill, Mill, Timer) {
 
 var NO_STAR = "&#9734;&#9734;&#9734;",
 	ONE_STAR = "&#9733;&#9734;&#9734;",
@@ -60,7 +58,7 @@ var App = function(options) {
 
 		this.scene = new THREE.Scene();
 
-		this.camera = new THREE.PerspectiveCamera(VIEW_ANGLE, this.WIDTH/this.HEIGHT, NEAR, FAR);
+		this.camera = new THREE.PerspectiveCamera(Constants.VIEW_ANGLE, this.WIDTH / this.HEIGHT, Constants.NEAR, Constants.FAR);
 
 		// The camera starts at 0,0,0 so pull it back
 		this.camera.position.z = 200;
@@ -101,13 +99,28 @@ var App = function(options) {
 
 		this.animate(); // Begin animation loop
 
-		var highlighted = null;
 		var line = Shapes.line();
 		line.visible = false;
+		line.name = Constants.LASER_NAME;
 		this.scene.add(line);
-		var circle = Shapes.circle();
 
 		var plane = null;
+
+		this.tools = {
+			drill: new Drill({
+				scene: this.scene,
+				radius: this.radius,
+				size: this.size * 2
+			}),
+			mill: new Mill({
+				scene: this.scene,
+				radius: this.radius,
+				depth: this.depth
+			})
+		};
+		this.tools.mill.addEventListener('change', function () {
+			that.render();
+		});
 
 		this.$canvas.on('click', function(event) {
 			event.preventDefault();
@@ -123,11 +136,8 @@ var App = function(options) {
 			var intersects = ray.intersectObjects(that.intersectsMode());
 
 			if (intersects.length == 0) {
-				if (highlighted) {
-					that.scene.remove(highlighted);
-					highlighted = null;
-				}
-
+				var tool = that.tools['mill'];
+				tool.unintersect();
 				return;
 			}
 
@@ -142,57 +152,20 @@ var App = function(options) {
 			switch (that.mode) {
 			case 'drill':
 
-				var output = that.subtract(that.piece, Shapes.cylinder({
-					radius: that.radius,
-					position: pt,
-					depth: that.size * 2,
-					normal: normal
-				}));
-				that.redrawPiece(output);
+				var tool = that.tools['drill'];
+				that.redrawPiece(tool.click(that.piece, pt, normal));
 
-				window.timer.subtractTime(0.013 * Math.PI * that.radius * that.radius * 100);
+				window.timer.subtractTime(tool.getTime());
 
 				break;
 
 			case 'mill':
+				var tool = that.tools['mill'];
 
-				if (highlighted) {
-					var startPt = highlighted.position.sub(normal.clone().multiplyScalar(OFFSET)); // reverse the offset
-
-					that.scene.remove(highlighted);
-					highlighted = null;
-
-					if (!highlightedNormal.equals(normal)) {
-						break;
-					}
-
-					var mill = that.mill({
-						start: startPt,
-						end: pt,
-						length: that.radius*2,
-						depth: that.depth*2,
-						normal: normal
-					});
-
-					if (mill) {
-						var output = that.subtract(that.piece, mill);
-						that.redrawPiece(output);
-
-						window.timer.subtractTime(0.020 * (Math.PI*that.radius*that.radius + 2*that.radius*startPt.distanceTo(pt)) * that.depth);
-					}
-
-				} else {
-					// var x = Shapes.cross({color: 0xff0000});
-					var x = Shapes.circle({
-						radius: that.radius
-					});
-					x.position = pt.clone().add(normal.clone().multiplyScalar(OFFSET)); // offset so the cross shows up
-					var rotation = normal.clone().applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI/2);
-					x.rotation.fromArray(rotation.toArray());
-					that.scene.add(x);
-					that.render();
-					highlighted = x;
-					highlightedNormal = normal;
+				var draw = tool.click(that.piece, pt, normal);
+				if (draw) {
+					that.redrawPiece(draw);
+					window.timer.subtractTime(tool.getTime());
 				}
 
 				break;
@@ -244,11 +217,12 @@ var App = function(options) {
 
 			var intersects = ray.intersectObjects(that.intersectsMode());
 
-			that.scene.remove(circle);
-			circle = null;
-
 			that.scene.remove(plane);
 			plane = null;
+
+			// TEMP
+			that.tools['drill'].hide();
+			that.tools['mill'].hide();
 
 			if (intersects.length == 0) {
 				line.visible = false;
@@ -270,41 +244,13 @@ var App = function(options) {
 
 			switch (that.mode) {
 			case 'drill':
-				line.visible = true;
-				line.geometry.verticesNeedUpdate = true;
-				line.geometry.vertices = [
-					pt.clone().add(normal.clone().multiplyScalar(-500)),
-					pt.clone().add(normal.clone().multiplyScalar(500))
-				];
-
-				circle = Shapes.circle({
-					radius: that.radius
-				});
-				circle.position = pt.clone().add(normal.clone().multiplyScalar(OFFSET));
-				var rotation = normal.clone().applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI/2);
-				circle.rotation.fromArray(rotation.toArray());
-				that.scene.add(circle);
+				var tool = that.tools['drill'];
+				tool.show(pt, normal);
 				break;
 
 			case 'mill':
-				if (highlighted) {
-					var startPt = highlighted.position;
-					line.visible = true;
-					line.geometry.verticesNeedUpdate = true;
-					line.geometry.vertices = [
-						startPt.clone().add(normal.clone().multiplyScalar(OFFSET)),
-						pt.clone().add(normal.clone().multiplyScalar(OFFSET))
-					];
-				} else {
-					circle = Shapes.circle({
-						radius: that.radius
-					});
-					circle.position = pt.clone().add(normal.clone().multiplyScalar(OFFSET));
-					var rotation = normal.clone().applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI/2);
-					circle.rotation.fromArray(rotation.toArray());
-					that.scene.add(circle);
-				}
-
+				var tool = that.tools['mill'];
+				tool.show(pt, normal);
 				break;
 
 			case 'saw':
@@ -328,7 +274,7 @@ var App = function(options) {
 				line.visible = true;
 				line.geometry.verticesNeedUpdate = true;
 				line.geometry.vertices = [
-					pt.clone().add(dir.clone().multiplyScalar(OFFSET)),
+					pt.clone().add(dir.clone().multiplyScalar(Constants.OFFSET)),
 					pt.clone().add(dir.clone().multiplyScalar(sign*that.size*2))
 				];
 				break;
@@ -377,10 +323,13 @@ var App = function(options) {
 	},
 
 	redrawPiece: function(newPiece) {
-		if (this.piece)
+		if (this.piece) {
 			this.scene.remove(this.piece);
-		this.oldPiece = this.piece;
+			this.oldPiece = this.piece;
+		}
+
 		this.piece = newPiece;
+		this.piece.name = Constants.PIECE_NAME;
 		this.scene.add(this.piece);
 		this.render();
 	},
@@ -389,59 +338,6 @@ var App = function(options) {
 		if (this.oldPiece) {
 			this.redrawPiece(this.oldPiece);
 		}
-	},
-
-	mill: function(options) {
-		var start = options.start,
-			end = options.end,
-			normal = options.normal;
-
-		if (Utils.roughlyEquals(start, end)) {
-			end = start.clone().add(Utils.iNormal(normal).multiplyScalar(0.05));
-		}
-
-		var l1 = Utils.getProjection(start, normal);
-		var l2 = Utils.getProjection(end, normal);
-		var l = l1.clone().sub(l2);
-		var dist = l1.distanceTo(l2);
-
-		var mRot, angle;
-		if (l.z == 0) {
-			angle = Math.PI/2+Math.atan2(l.y, l.x);
-			mRot = Utils.XYZMatrix();
-		} else if (l.y == 0) {
-			angle = Math.atan2(l.z, l.x);
-			mRot = Utils.XZYMatrix();
-		} else if (l.x == 0) {
-			angle = Math.PI-Math.atan2(l.y, l.z);
-			mRot = Utils.ZYXMatrix();
-		} else {
-			return null; // not valid
-		}
-
-		var rotation = Utils.map(normal, Math.abs).applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI/2);
-		rotation.add(Utils.map(normal, Math.abs).applyMatrix3(mRot).multiplyScalar(angle));
-
-		var cubeGeometry = new THREE.CubeGeometry(dist, options.length, options.depth);
-		var cube = new THREE.Mesh(cubeGeometry, this.material);
-		cube.rotation.fromArray(rotation.toArray());
-		cube.position = Utils.getMidpoint(start, end);
-
-		var round1 = Shapes.cylinder({
-			radius: options.length/2,
-			depth: options.depth,
-			normal: normal,
-			position: start.clone()
-		});
-
-		var round2 = Shapes.cylinder({
-			radius: options.length/2,
-			depth: options.depth,
-			normal: normal,
-			position: end.clone()
-		});
-
-		return this.union(round1, round2, cube);
 	},
 
 	saw: function(options) {
@@ -542,7 +438,7 @@ var App = function(options) {
 		console.log('Reset level');
 		this.curSample = 0;
 		this.loadSample();
-		window.timer.reset(levels[this.curLevel].time);
+		window.timer.reset(Levels[this.curLevel].time);
 
 		this.reset(false);
 		this.resetCount = 0;
@@ -551,8 +447,8 @@ var App = function(options) {
 	},
 
 	next: function() {
-		if (this.curSample == levels[this.curLevel].series.length-1) {
-			if (this.curLevel == Object.keys(levels).length-1) {
+		if (this.curSample == Levels[this.curLevel].series.length-1) {
+			if (this.curLevel == Object.keys(Levels).length-1) {
 				console.log('No more levels');
 				return;
 			}
@@ -569,7 +465,7 @@ var App = function(options) {
 		$('#breakdown td.yours').each(_.bind(function(i, el) {
 			var $el = $(el);
 			var yours = Math.round(window.timer.ticks[i] / 1000);
-			var target = levels[this.curLevel].series[i].time;
+			var target = Levels[this.curLevel].series[i].time;
 			$el.text(yours);
 			$el.next().text(target);
 			if (Math.abs(yours-target)/target >= 0.25) {
@@ -597,7 +493,7 @@ var App = function(options) {
 		this.curLevel++;
 		this.curSample = 0;
 		this.loadSample();
-		window.timer.reset(levels[this.curLevel].time);
+		window.timer.reset(Levels[this.curLevel].time);
 
 		this.reset(false);
 		this.resetCount = 0;
@@ -615,7 +511,7 @@ var App = function(options) {
 	},
 
 	loadSample: function() {
-		var sample = levels[this.curLevel].series[this.curSample];
+		var sample = Levels[this.curLevel].series[this.curSample];
 		$.ajax({
 			url: sample.url,
 			success: function(data) {
@@ -645,7 +541,7 @@ $(function() {
 	window.timer = new Timer({
 		barContainer: '#timerBar',
 		textContainer: '#timerText',
-		startTime: levels[0].time // in seconds
+		startTime: Levels[0].time // in seconds
 	});
 
 	window.app = new App({
