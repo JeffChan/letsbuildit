@@ -42,12 +42,14 @@ var App = function(options) {
 	curSample: 0,
 	curLevel: 0,
 
-	initialize: function(options) {
-		options = options || {};
+	initialize: function (options) {
+		_.bindAll(this, '_onClick', '_onMousemove', 'render');
 
+		options = options || {};
 		this.HEIGHT = options.height;
 		this.WIDTH = options.width;
 		this.locked = options.locked || false;
+		this.size = options.size || 100;
 
 		this.$container = $(options.htmlContainer);
 
@@ -59,15 +61,40 @@ var App = function(options) {
 
 		this.scene = new THREE.Scene();
 
-		this.camera = new THREE.PerspectiveCamera(Constants.VIEW_ANGLE, this.WIDTH / this.HEIGHT, Constants.NEAR, Constants.FAR);
+		this.addCamera();
+		this.addLight();
+		this.addControls();
+		this.setView('isometric');
 
+		this.material = new THREE.MeshLambertMaterial({
+			color: 'silver',
+			shading: THREE.NoShading
+		});
+
+		var cube = this.reset(false);
+		this.addFakePiece(cube);
+		this.addGrid();
+		this.addLaser();
+		this.setupTools();
+
+		this.animate(); // Begin animation loop
+
+		this.$canvas.on('click', this._onClick);
+		this.$canvas.on('mousemove', this._onMousemove);
+	},
+
+	addCamera: function () {
+		this.camera = new THREE.PerspectiveCamera(Constants.VIEW_ANGLE, this.WIDTH / this.HEIGHT, Constants.NEAR, Constants.FAR);
 		// The camera starts at 0,0,0 so pull it back
 		this.camera.position.z = 200;
+	},
 
-		// create a point light
+	addLight: function () {
 		this.pointLight = new THREE.PointLight(0xffffff);
 		this.scene.add(this.pointLight);
+	},
 
+	addControls: function () {
 		this.controls = new THREE.TrackballControls(this.camera, $('.belly')[0]);
 		var controls = this.controls;
 		// controls.enabled = false;
@@ -80,31 +107,27 @@ var App = function(options) {
 		controls.dynamicDampingFactor = 0.3;
 		controls.keys = [ 65, 83, 68 ];
 		this.controls.addEventListener('change', _.bind(this.render, this));
+	},
 
-		this.material = new THREE.MeshLambertMaterial({
-			color: 'silver',
-			shading: THREE.NoShading
-		});
-
-		this.size = 100;
-		var cube = this.reset(false);
-
+	addFakePiece: function (cube) {
 		this.fake = cube.clone();
 		this.fake.visible = false;
 		this.scene.add(this.fake);
+	},
 
+	addGrid: function () {
 		this.grid = Shapes.grid({size: this.size});
 		this.scene.add(this.grid);
+	},
 
-		this.setView('isometric');
-
-		this.animate(); // Begin animation loop
-
-		var line = Shapes.line();
+	addLaser: function () {
+		var line = this.laser = Shapes.line();
 		line.visible = false;
 		line.name = Constants.LASER_NAME;
 		this.scene.add(line);
+	},
 
+	setupTools: function () {
 		this.tools = {
 			drill: new Drill({
 				scene: this.scene,
@@ -121,94 +144,91 @@ var App = function(options) {
 				size: this.size
 			})
 		};
-		this.tools.mill.addEventListener('change', function () {
-			that.render();
+		this.tools.mill.addEventListener('change', this.render);
+	},
+
+	_onClick: function (event) {
+		event.preventDefault();
+
+		if (this.locked) {
+			return;
+		}
+
+		var target = event.target;
+
+		var ray = Utils.clickToRay(event.clientX-target.offsetLeft, event.clientY-target.offsetTop, this.WIDTH, this.HEIGHT, this.camera);
+
+		var intersects = ray.intersectObjects(this.intersectsMode());
+
+		if (intersects.length == 0) {
+			var tool = this.tools['mill'];
+			tool.unintersect();
+			return;
+		}
+
+		var i = intersects[0];
+		var normal = i.face.normal;
+
+		if (!Utils.isXYZ(normal)) {
+			return;
+		}
+
+		var tool = this.curTool;
+		if (tool) {
+			var draw = tool.click(this.piece, i.point, normal);
+			if (draw) {
+				this.redrawPiece(draw);
+				window.timer.subtractTime(tool.getTime());
+			}
+		}
+
+		if (window.timer.timeLeft == 0) {
+			$('#outoftime').modal();
+			this.resetLevel();
+		}
+	},
+
+	_onMousemove: function (event) {
+		event.preventDefault();
+
+		if (this.locked) {
+			return;
+		}
+
+		var target = event.target;
+
+		var ray = Utils.clickToRay(event.clientX-target.offsetLeft, event.clientY-target.offsetTop, this.WIDTH, this.HEIGHT, this.camera);
+
+		var intersects = ray.intersectObjects(this.intersectsMode());
+
+		_.each(this.tools, function (tool) {
+			tool.hide();
 		});
 
-		this.$canvas.on('click', function(event) {
-			event.preventDefault();
+		if (intersects.length == 0) {
+			this.laser.visible = false;
+			this.render();
+			// this.$canvas.css('cursor', '');
+			return;
+		}
 
-			if (that.locked) {
-				return;
-			}
+		// this.$canvas.css('cursor', 'crosshair');
 
-			var target = event.target;
+		var i = intersects[0];
+		var normal = i.face.normal;
 
-			var ray = Utils.clickToRay(event.clientX-target.offsetLeft, event.clientY-target.offsetTop, that.WIDTH, that.HEIGHT, that.camera);
+		if (!Utils.isXYZ(normal)) {
+			this.laser.visible = false;
+			return;
+		}
 
-			var intersects = ray.intersectObjects(that.intersectsMode());
+		var tool = this.curTool;
+		if (tool) {
+			tool.show(i.point, normal);
+		}
 
-			if (intersects.length == 0) {
-				var tool = that.tools['mill'];
-				tool.unintersect();
-				return;
-			}
+		this.render();
 
-			var i = intersects[0];
-			var normal = i.face.normal;
-
-			if (!Utils.isXYZ(normal)) {
-				return;
-			}
-
-			var tool = that.curTool;
-			if (tool) {
-				var draw = tool.click(that.piece, i.point, normal);
-				if (draw) {
-					that.redrawPiece(draw);
-					window.timer.subtractTime(tool.getTime());
-				}
-			}
-
-			if (window.timer.timeLeft == 0) {
-				$('#outoftime').modal();
-				that.resetLevel();
-			}
-
-		});
-
-		this.$canvas.on('mousemove', function(event) {
-			event.preventDefault();
-
-			if (that.locked) {
-				return;
-			}
-
-			var target = event.target;
-
-			var ray = Utils.clickToRay(event.clientX-target.offsetLeft, event.clientY-target.offsetTop, that.WIDTH, that.HEIGHT, that.camera);
-
-			var intersects = ray.intersectObjects(that.intersectsMode());
-
-			_.each(that.tools, function (tool) {
-				tool.hide();
-			});
-
-			if (intersects.length == 0) {
-				line.visible = false;
-				that.render();
-				// that.$canvas.css('cursor', '');
-				return;
-			}
-
-			// that.$canvas.css('cursor', 'crosshair');
-
-			var i = intersects[0];
-			var normal = i.face.normal;
-
-			if (!Utils.isXYZ(normal)) {
-				line.visible = false;
-				return;
-			}
-
-			var tool = that.curTool;
-			if (tool) {
-				tool.show(i.point, normal);
-			}
-
-			that.render();
-
-		});
 	},
 
 	render: function() {
