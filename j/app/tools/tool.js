@@ -4,6 +4,7 @@ define([
   'app/settings/constants'
 ], function (THREE, ThreeBSP, Constants) {
   function Tool(options) {
+    options = options || {};
     this.scene = options.scene;
   }
 

@@ -8,6 +8,7 @@ define([
 	'app/tools/tool',
 	'app/tools/drill',
 	'app/tools/mill',
+	'app/tools/saw',
 	'app/timer',
 	'bootstrap',
 	'bootstrap-slider',
@@ -15,7 +16,7 @@ define([
 	'three',
 	'three.GeometryExporter',
 	'three.TrackballControls'
-], function ($, _, Levels, Constants, Utils, Shapes, Tool, Drill, Mill, Timer) {
+], function ($, _, Levels, Constants, Utils, Shapes, Tool, Drill, Mill, Saw, Timer) {
 
 var NO_STAR = "&#9734;&#9734;&#9734;",
 	ONE_STAR = "&#9733;&#9734;&#9734;",
@@ -104,8 +105,6 @@ var App = function(options) {
 		line.name = Constants.LASER_NAME;
 		this.scene.add(line);
 
-		var plane = null;
-
 		this.tools = {
 			drill: new Drill({
 				scene: this.scene,
@@ -116,6 +115,10 @@ var App = function(options) {
 				scene: this.scene,
 				radius: this.radius,
 				depth: this.depth
+			}),
+			saw: new Saw({
+				scene: this.scene,
+				size: this.size
 			})
 		};
 		this.tools.mill.addEventListener('change', function () {
@@ -161,7 +164,6 @@ var App = function(options) {
 
 			case 'mill':
 				var tool = that.tools['mill'];
-
 				var draw = tool.click(that.piece, pt, normal);
 				if (draw) {
 					that.redrawPiece(draw);
@@ -170,30 +172,12 @@ var App = function(options) {
 
 				break;
 			case 'saw':
-
-				if (plane) {
-					var dir = normal.clone().applyMatrix3(Utils.ZXYMatrix());
-					var length = that.size;
-					var position = plane.position.clone();
-					var shift = dir.multiplyScalar(length/2);
-
-					if (that.cutInverse) {
-						shift = Utils.map(shift, function(a) {return -1*a;});
-					}
-
-					var saw = that.saw({
-						normal: normal,
-						position: position.sub(shift),
-						length: length
-					});
-					var rotation = (new THREE.Vector3()).fromArray(plane.rotation.toArray()).applyMatrix3(Utils.YZXMatrix());
-					saw.rotation.fromArray(rotation.toArray());
-					var output = that.subtract(that.piece, saw);
-					that.redrawPiece(output);
-
-					window.timer.subtractTime(240);
+				var tool = that.tools['saw'];
+				var draw = tool.click(that.piece, pt, normal);
+				if (draw) {
+					that.redrawPiece(draw);
+					window.timer.subtractTime(tool.getTime());
 				}
-
 				break;
 			}
 
@@ -217,12 +201,10 @@ var App = function(options) {
 
 			var intersects = ray.intersectObjects(that.intersectsMode());
 
-			that.scene.remove(plane);
-			plane = null;
-
 			// TEMP
 			that.tools['drill'].hide();
 			that.tools['mill'].hide();
+			that.tools['saw'].hide();
 
 			if (intersects.length == 0) {
 				line.visible = false;
@@ -254,61 +236,14 @@ var App = function(options) {
 				break;
 
 			case 'saw':
-				plane = Shapes.plane({
-					segments: 5,
-					size: 200,
-					normal: normal,
-					material: new THREE.MeshBasicMaterial({
-						color:'red',
-						wireframe: true,
-						wireframeLinewidth: 2
-					})
-				});
-				plane.position = pt.clone().sub(normal.clone().multiplyScalar(that.size/2));
-				var rotation = normal.clone().applyMatrix3(Utils.ZYXMatrix()).multiplyScalar(Math.PI/2);
-				plane.rotation.fromArray(rotation.toArray());
-				that.scene.add(plane);
-
-				var sign = that.cutInverse ? 1 : -1;
-				var dir = normal.clone().applyMatrix3(Utils.ZXYMatrix());
-				line.visible = true;
-				line.geometry.verticesNeedUpdate = true;
-				line.geometry.vertices = [
-					pt.clone().add(dir.clone().multiplyScalar(Constants.OFFSET)),
-					pt.clone().add(dir.clone().multiplyScalar(sign*that.size*2))
-				];
+				var tool = that.tools['saw'];
+				tool.show(pt, normal);
 				break;
 			}
 
 			that.render();
 
 		});
-	},
-
-	op: function (raw, cut, op) {
-		var rawBSP = new ThreeBSP(raw),
-			cutBSP = new ThreeBSP(cut);
-
-		var bsp = rawBSP[op](cutBSP);
-		var result = bsp.toMesh(raw.material);
-		result.geometry.computeVertexNormals();
-		return result;
-	},
-
-	subtract: function (raw, cut) {
-		return this.op(raw, cut, 'subtract');
-	},
-
-	union: function () {
-		var result = arguments[0];
-		for (var i = 1; i < arguments.length; i++) {
-			result = this.op(result, arguments[i], 'union');
-		}
-		return result;
-	},
-
-	intersect: function (raw, cut) {
-		return this.op(raw, cut, 'intersect');
 	},
 
 	render: function() {
@@ -338,26 +273,6 @@ var App = function(options) {
 		if (this.oldPiece) {
 			this.redrawPiece(this.oldPiece);
 		}
-	},
-
-	saw: function(options) {
-		options = options || {};
-
-		var normal = options.normal;
-		var position = options.position;
-		var length = options.length;
-
-		var cubeGeometry = new THREE.CubeGeometry(this.size*2, length, this.size*2);
-		var cube = new THREE.Mesh(cubeGeometry, this.material);
-		var rotation = Utils.map(normal, Math.abs).applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI/2);
-		cube.rotation.fromArray(rotation.toArray());
-		cube.position = position;
-
-		return cube;
-	},
-
-	sander: function(options) {
-
 	},
 
 	showGrid: function(show) {
