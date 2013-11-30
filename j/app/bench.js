@@ -137,6 +137,28 @@ define([
 			this.tools.mill.addEventListener('change', this.render);
 		},
 
+		mouseIntersects: function (event) {
+			var target = event.target;
+			var x = event.clientX;
+			var y = event.clientY;
+
+			var ray = Utils.clickToRay(x - target.offsetLeft, y - target.offsetTop, this.WIDTH, this.HEIGHT, this.camera);
+			var intersections = ray.intersectObjects(this.intersectsMode());
+
+			if (intersections.length === 0) {
+				return null;
+			}
+
+			var intersection = intersections[0];
+			var normal = intersection.face.normal;
+
+			if (!Utils.isXYZ(normal)) {
+				return null;
+			}
+
+			return intersection;
+		},
+
 		_onClick: function (event) {
 			event.preventDefault();
 
@@ -144,29 +166,19 @@ define([
 				return;
 			}
 
-			var target = event.target;
-
-			var ray = Utils.clickToRay(event.clientX-target.offsetLeft, event.clientY-target.offsetTop, this.WIDTH, this.HEIGHT, this.camera);
-
-			var intersects = ray.intersectObjects(this.intersectsMode());
-
 			var tool = this.curTool;
-			if (intersects.length === 0) {
+			var intersection = this.mouseIntersects(event);
+
+			if (!intersection) {
 				if (tool) {
 					tool.unintersect();
 				}
 				return;
 			}
 
-			var i = intersects[0];
-			var normal = i.face.normal;
-
-			if (!Utils.isXYZ(normal)) {
-				return;
-			}
-
 			if (tool) {
-				var draw = tool.click(this.piece, i.point, normal);
+				var normal = intersection.face.normal;
+				var draw = tool.click(this.piece, intersection.point, normal);
 				if (draw) {
 					this.redrawPiece(draw);
 					this.dispatchEvent({
@@ -185,40 +197,25 @@ define([
 				return;
 			}
 
-			var target = event.target;
+			var intersection = this.mouseIntersects(event);
 
-			var ray = Utils.clickToRay(event.clientX-target.offsetLeft, event.clientY-target.offsetTop, this.WIDTH, this.HEIGHT, this.camera);
-
-			var intersects = ray.intersectObjects(this.intersectsMode());
+			if (!intersection) {
+				this.laser.visible = false;
+				return;
+			}
 
 			_.each(this.tools, function (tool) {
 				tool.hide();
 			});
 
-			if (intersects.length === 0) {
-				this.laser.visible = false;
-				this.render();
-				// this.$canvas.css('cursor', '');
-				return;
-			}
-
-			// this.$canvas.css('cursor', 'crosshair');
-
-			var i = intersects[0];
-			var normal = i.face.normal;
-
-			if (!Utils.isXYZ(normal)) {
-				this.laser.visible = false;
-				return;
-			}
+			var normal = intersection.face.normal;
 
 			var tool = this.curTool;
 			if (tool) {
-				tool.show(i.point, normal);
+				tool.show(intersection.point, normal);
 			}
 
 			this.render();
-
 		},
 
 		render: function () {

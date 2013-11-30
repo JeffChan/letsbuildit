@@ -252,16 +252,11 @@ define([
     });
 
     $('#cutInverse').on('change', function () {
-      if (this.checked) {
-        game.bench.cutInverse = true;
-      } else {
-        game.bench.cutInverse = false;
-      }
+      game.bench.cutInverse = this.checked;
     });
 
     $('.change-view').on('click', function () {
-      var $el = $(this);
-      var view = $el.attr('id');
+      var view = $(this).attr('id');
       game.setViewAll(view);
     });
   });
