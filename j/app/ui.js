@@ -147,20 +147,16 @@ define([
 
     game.loadSample();
 
-    $('#done').on('click', function (e) {
-      e.preventDefault();
+    $('#done').on('click', function () {
       game.next();
     });
-    $('#reset').on('click', function (e) {
-      e.preventDefault();
+    $('#reset').on('click', function () {
       game.bench.reset(1);
     });
-    $('#undo').on('click', function (e) {
-      e.preventDefault();
+    $('#undo').on('click', function () {
       game.bench.undo();
     });
-    $('#export').on('click', function (e) {
-      e.preventDefault();
+    $('#export').on('click', function () {
       game.bench.export(true);
     });
     $('#file').on('change', function (e) {
@@ -174,8 +170,7 @@ define([
       reader.readAsText(file);
     });
 
-    $('a.tool').on('click', function (e) {
-      e.preventDefault();
+    $('button.tool').on('click', function (e) {
       var $tool = $(e.target);
       var id = $tool.attr('id');
       $('#currentTool').text($tool.text());
@@ -183,7 +178,7 @@ define([
 
       $('body').removeClass('selected-mill selected-drill selected-saw').addClass('selected-' + id);
 
-      $('a.tool').each(function (i, el) {
+      $('button.tool').each(function (i, el) {
         $(el).removeClass('btn-info');
       });
       $tool.addClass('btn-info');
