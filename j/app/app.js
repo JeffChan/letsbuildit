@@ -1,3 +1,5 @@
+/* globals requestAnimationFrame, prompt, saveAs */
+
 define([
 	'jquery',
 	'underscore',
