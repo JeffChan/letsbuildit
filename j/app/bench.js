@@ -4,7 +4,6 @@ define([
 	'jquery',
 	'underscore',
 	'three',
-	'app/settings/levels',
 	'app/settings/constants',
 	'app/utils',
 	'app/shapes',
@@ -15,9 +14,9 @@ define([
 	'three.GeometryExporter',
 	'three.TrackballControls',
 	'filesaver'
-], function ($, _, THREE, Levels, Constants, Utils, Shapes, Tool, Drill, Mill, Saw) {
+], function ($, _, THREE, Constants, Utils, Shapes, Tool, Drill, Mill, Saw) {
 
-	function App(options) {
+	function Bench(options) {
 		_.bindAll(this, '_onClick', '_onMousemove', 'render');
 
 		// Instance variables
@@ -33,8 +32,6 @@ define([
 		this.cutInverse = false;
 
 		this.resetCount = 0;
-		this.curSample = 0;
-		this.curLevel = 0;
 
 		options = options || {};
 		this.HEIGHT = options.height;
@@ -62,7 +59,7 @@ define([
 			shading: THREE.NoShading
 		});
 
-		var cube = this.reset(false);
+		var cube = this.reset(-1);
 		this.addFakePiece(cube);
 		this.addGrid();
 		this.addLaser();
@@ -74,7 +71,7 @@ define([
 		this.$canvas.on('mousemove', this._onMousemove);
 	}
 
-	App.prototype = {
+	Bench.prototype = {
 
 		addCamera: function () {
 			this.camera = new THREE.PerspectiveCamera(Constants.VIEW_ANGLE, this.WIDTH / this.HEIGHT, Constants.NEAR, Constants.FAR);
@@ -172,13 +169,12 @@ define([
 				var draw = tool.click(this.piece, i.point, normal);
 				if (draw) {
 					this.redrawPiece(draw);
-					window.timer.subtractTime(tool.getTime());
+					this.dispatchEvent({
+						type: 'action',
+						mode: this.mode,
+						time: tool.getTime()
+					});
 				}
-			}
-
-			if (window.timer.timeLeft === 0) {
-				$('#outoftime').modal();
-				this.resetLevel();
 			}
 		},
 
@@ -286,12 +282,16 @@ define([
 			return mesh;
 		},
 
-		reset: function (count) {
+		reset: function (countDelta) {
+			countDelta = countDelta || 0; // default to no change
+
 			var size = this.size;
 			var cube = new THREE.Mesh(new THREE.CubeGeometry(size, size, size), this.material);
 			this.redrawPiece(cube);
-			if (count !== false) {
-				this.resetCount++;
+			if (countDelta === -1) {
+				this.resetCount = 0;
+			} else if (countDelta >= 1) {
+				this.resetCount += countDelta;
 			}
 
 			return cube;
@@ -330,97 +330,11 @@ define([
 			default :
 				return [];
 			}
-		},
-
-		resetLevel: function () {
-			this.curSample = 0;
-			this.loadSample();
-			window.timer.reset(Levels[this.curLevel].time);
-
-			this.reset(false);
-			this.resetCount = 0;
-
-			this.setView('isometric');
-		},
-
-		next: function () {
-			if (this.curSample === Levels[this.curLevel].series.length - 1) {
-				if (this.curLevel === Object.keys(Levels).length - 1) {
-					return;
-				}
-				this.advanceLevel();
-			} else {
-				this.advanceSample();
-			}
-		},
-
-		advanceLevel: function () {
-			window.timer.tick();
-
-			var correct = 0, incorrect = 0;
-			$('#breakdown td.yours').each(_.bind(function (i, el) {
-				var $el = $(el);
-				var yours = Math.round(window.timer.ticks[i] / 1000);
-				var target = Levels[this.curLevel].series[i].time;
-				$el.text(yours);
-				$el.next().text(target);
-				if (Math.abs(yours - target) / target >= 0.25) {
-					incorrect += 1;
-				} else {
-					correct += 1;
-				}
-			}, this));
-
-			var stars = correct - 0.5 * incorrect - 0.5 * this.resetCount;
-
-			if (stars < 0) {
-				$('.rating').html(Constants.NO_STAR);
-			} else if (stars < 1) {
-				$('.rating').html(Constants.ONE_STAR);
-			} else if (stars < 3) {
-				$('.rating').html(Constants.TWO_STAR);
-			} else if (stars <= 5) {
-				$('.rating').html(Constants.THREE_STAR);
-			}
-
-			$('#levelComplete').modal();
-
-			this.curLevel++;
-			this.curSample = 0;
-			this.loadSample();
-			window.timer.reset(Levels[this.curLevel].time);
-
-			this.reset(false);
-			this.resetCount = 0;
-
-			// TODO FIX
-			// setViewAll('isometric');
-		},
-
-		advanceSample: function () {
-			this.curSample++;
-			this.loadSample();
-			window.timer.tick();
-			this.reset(false);
-
-			// TODO FIX
-			// setViewAll('isometric');
-		},
-
-		loadSample: function () {
-			var sample = Levels[this.curLevel].series[this.curSample];
-			$.ajax({
-				url: sample.url,
-				success: function (data) {
-					window.demo.redrawPiece(window.demo.import(data));
-				},
-				dataType: 'html'
-			});
-			$('#curLevel').text(this.curLevel + 1);
-			$('#curSample').text(this.curSample + 1);
 		}
 	};
 
-	return App;
+	THREE.EventDispatcher.prototype.apply(Bench.prototype);
+
+	return Bench;
 
 });

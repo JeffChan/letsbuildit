@@ -92,7 +92,7 @@ define([
       var rotation = normal.clone().applyMatrix3(Utils.YXZMatrix()).multiplyScalar(Math.PI / 2);
       x.rotation.fromArray(rotation.toArray());
       this.scene.add(x);
-      this.dispatchEvent('change');
+      this.dispatchEvent({type: 'change'});
 
       this.highlighted = x;
       this.highlightedNormal = normal;
