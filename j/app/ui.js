@@ -190,7 +190,7 @@ define([
       saw: 'A power saw used for cutting materials <a href="http://www.youtube.com/watch?v=ZYlLIp5urJQ">YouTube Video</a>',
       drill: 'An upright drilling machine for producing holes <a href="http://www.youtube.com/watch?v=ul20R32HJ3E">YouTube Video</a>'
     };
-    $('a.tool').each(function(i, el) {
+    $('button.tool').each(function(i, el) {
       var $tool = $(el);
       var i = $tool.attr('id');
       $tool.popover({
@@ -250,7 +250,7 @@ define([
       game.bench.cutInverse = this.checked;
     });
 
-    $('.change-view').on('click', function () {
+    $('.change-view button').on('click', function () {
       var view = $(this).attr('id');
       game.setViewAll(view);
     });
