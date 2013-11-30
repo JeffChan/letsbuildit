@@ -1,8 +1,7 @@
 define([
   'three',
-  'three.CSG',
-  'app/settings/constants'
-], function (THREE, ThreeBSP, Constants) {
+  'three.CSG'
+], function (THREE, ThreeBSP) {
   function Tool(options) {
     options = options || {};
     this.scene = options.scene;
