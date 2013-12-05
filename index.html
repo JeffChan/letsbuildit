@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Let's Build It</title>
+	<title>Machiner</title>
 	<link rel="stylesheet" type="text/css" href="c/bootstrap.min.css" />
 	<link rel="stylesheet" type="text/css" href="c/slider.css" />
 	<link rel="stylesheet" type="text/css" href="c/style.css" />
@@ -117,44 +117,24 @@
 
 <div class="wrapper">
 	<div class="navbar navbar-inverse"><div class="navbar-inner">
-		<span class="brand">Let's Build It</span>
+		<span class="brand">Machiner</span>
 		<div class="nav-collapse">
-			<ul class="nav">
-				<li><a href="#">Level <span id="curLevel">1</span>&nbsp;&nbsp;
-					Sample #<span id="curSample">1</span></a></li>
-			</ul>
 			<ul class="nav pull-right">
 				<li><a href="#" data-toggle="modal" data-target="#help">Instructions</a></li>
-				<!-- <li><a href="#" data-toggle="modal" data-target="#about">About</a></li> -->
 			</ul>
 		</div>
 	</div></div>
 
-	<div class="belly">
-
-	<div class="row">
-		<div class="tools span2">
-			<h3>Tools</h3>
-			<button id="drill" class="tool btn btn-large">Drill Press</button>
-			<button id="mill" class="tool btn btn-large">Mill</button>
-			<button id="saw" class="tool btn btn-large">Band Saw</button>
-			<span id="sander" class="disabled-tool tool btn btn-large btn-inverse">Belt Sander</span>
-			<span id="lathe" class="disabled-tool tool btn btn-large btn-inverse">Lathe</span>
-		</div>
-
-		<div class="span10">
-			<div class="row">
-				<div class="span3">
-					<h3>Time Left: <span id="timerText"></span></h3>
+<div style="position:absolute; top: 7px; left: 180px; right: 160px;">
+				<div class="span3" style="width: 170px">
+					<h3><span id="timerText"></span> left</h3>
 				</div>
-				<div class="span4">
-					<br>
+				<div class="span3" style="margin-top: 15px">
 					<div id="timerBar" class="progress progress-striped active" style="height: 29px;">
 						<div class="bar" style="width: 60%;"></div>
 					</div>
 				</div>
-				<div class="span3">
-					<br>
+				<div class="span3" style="margin-top: 15px">
 					<button class="btn btn-success" id="done">
 						<i class="icon-ok icon-white"></i>&nbsp;
 						I'm Done!
@@ -162,9 +142,21 @@
 				</div>
 			</div>
 
+	<div class="belly">
+
+	<div class="row">
+
+		<div class="span12">
 			<div class="row">
-				<div id="sandbox" class="span6">
-					<h4>Workbench</h4>
+				<div id="sandbox" class="span8">
+					<div class="tools">
+						<button id="drill" class="tool btn">Drill Press</button>
+						<button id="mill" class="tool btn">Mill</button>
+						<button id="saw" class="tool btn">Band Saw</button>
+						<button id="sander" class="tool btn">Belt Sander</button>
+						<button id="lathe" class="tool btn">Lathe</button>
+					</div>
+					<h3 class="heading">Workbench</h3>
 					<!--canvas-->
 					<div class="well">
 						<label class="radius">Radius&nbsp; <input id="radius" type="text" class="span3" /></label>
@@ -174,7 +166,7 @@
 				</div>
 
 				<div id="exhibit" class="span4">
-					<h4>Sample</h4>
+					<h3 class="heading">Sample #<span id="curSample">1</span> - Level <span id="curLevel"></span></h3>
 					<!--canvas-->
 					<br><br>
 					<button class="btn btn-info" id="gridToggle" data-state="hide">
@@ -185,9 +177,9 @@
 						<i class="icon-download icon-white"></i>&nbsp;Download
 					</button>
 					<br><br>
-					<!-- <button class="btn btn-danger" id="undo">
+					<button class="btn btn-danger" id="undo">
 						<i class="icon-share-alt icon-white"></i>&nbsp;Undo
-					</button> -->
+					</button>
 					<button class="btn btn-danger" id="reset">
 						<i class="icon-remove-circle icon-white"></i>&nbsp;Scrap
 					</button>
@@ -198,13 +190,13 @@
 						<button class="btn" id="right">Right</button>
 						<button class="btn" id="front">Front</button>
 					</div>
+
+					<strong>Import:</strong> <input type="file" id="file" />
 				</div>
 			</div>
 		</div>
 
 	</div>
-
-	<!-- <strong>Import:</strong> <input type="file" id="file" /> -->
 	</div>
 
 </div>

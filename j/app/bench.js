@@ -4,6 +4,7 @@ define([
 	'jquery',
 	'underscore',
 	'three',
+	'leap',
 	'app/settings/constants',
 	'app/utils',
 	'app/shapes',
@@ -14,7 +15,7 @@ define([
 	'three.GeometryExporter',
 	'three.TrackballControls',
 	'filesaver'
-], function ($, _, THREE, Constants, Utils, Shapes, Tool, Drill, Mill, Saw) {
+], function ($, _, THREE, Leap, Constants, Utils, Shapes, Tool, Drill, Mill, Saw) {
 
 	function Bench(options) {
 		_.bindAll(this, '_onClick', '_onMousemove', 'render');
@@ -45,7 +46,7 @@ define([
 		this.renderer.setSize(this.WIDTH, this.HEIGHT);
 		this.renderer.setClearColor(0x29333c);
 		this.$canvas = $(this.renderer.domElement);
-		this.$container.children('h4').after(this.renderer.domElement);
+		this.$container.children('.heading').after(this.renderer.domElement);
 
 		this.scene = new THREE.Scene();
 
@@ -69,6 +70,17 @@ define([
 
 		this.$canvas.on('click', this._onClick);
 		this.$canvas.on('mousemove', this._onMousemove);
+
+		// this.leap = new Leap.Controller({ enableGestures: true });
+		// this.leap.connect();
+		// var i = 0;
+		// this.leap.on('frame', function (frame) {
+		// 	if (i == 0) { console.log(frame); i = 1}
+		// 	_.each(frame.hand, function (hand) {
+		// 		// console.log(hand);
+		// 	});
+		// });
+
 	}
 
 	Bench.prototype = {
@@ -138,11 +150,12 @@ define([
 		},
 
 		mouseIntersects: function (event) {
-			var target = event.target;
+			var $target = $(event.target);
+			var offset = $target.offset();
 			var x = event.clientX;
 			var y = event.clientY;
 
-			var ray = Utils.clickToRay(x - target.offsetLeft, y - target.offsetTop, this.WIDTH, this.HEIGHT, this.camera);
+			var ray = Utils.clickToRay(x - offset.left, y - offset.top, this.WIDTH, this.HEIGHT, this.camera);
 			var intersections = ray.intersectObjects(this.intersectsMode());
 
 			if (intersections.length === 0) {

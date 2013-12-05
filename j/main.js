@@ -3,6 +3,7 @@
 requirejs.config({
   baseUrl: 'j',
   paths: {
+    'leap': 'lib/leap',
     'jquery': 'lib/jquery-2.0.3',
     'underscore': 'lib/underscore',
     'filesaver': 'lib/FileSaver',
@@ -14,6 +15,7 @@ requirejs.config({
     'three.TrackballControls': 'three/TrackballControls',
   },
   shim: {
+    'leap': { exports: 'Leap' },
     'underscore': { exports: '_' },
     'three': { exports: 'THREE' },
     'three.CSG': { deps: ['three'], exports: 'ThreeBSP' },

@@ -43,7 +43,7 @@ define(function () {
       updateTime: function () {
         var percentage = Math.round(this.timeLeft * 100 / this.totalTime);
         this.$bar.css('width', percentage + '%');
-        this.$text.text(Math.round(this.timeLeft / 1000) + " s");
+        this.$text.text(Math.round(this.timeLeft / 1000) + " secs");
 
         if (percentage < 20) {
           this.$container.removeClass(this.classes.warning).addClass(this.classes.danger);

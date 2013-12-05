@@ -134,8 +134,8 @@ define([
     var game = window.game = new Game({
       bench: new Bench({
         htmlContainer: '#sandbox',
-        width: 460,
-        height: 345
+        width: 620,
+        height: 465
       }),
       sample: new Bench({
         htmlContainer: '#exhibit',
@@ -165,6 +165,7 @@ define([
       reader.onload = (function () {
         return function (e) {
           game.sample.redrawPiece(game.sample.import(e.target.result));
+          game.bench.redrawPiece(game.bench.import(e.target.result));
         };
       })(file);
       reader.readAsText(file);
@@ -234,7 +235,8 @@ define([
       max: 12,
       step: 2
     }).on('slideStop', function (e) {
-      game.bench.radius = e.value;
+      // HACK
+      game.bench.curTool.radius = e.value;
     });
 
     $("#depth").slider({
@@ -243,11 +245,13 @@ define([
       max: 100,
       step: 4
     }).on('slideStop', function (e) {
-      game.bench.depth = e.value;
+      // HACK
+      game.bench.curTool.depth = e.value;
     });
 
     $('#cutInverse').on('change', function () {
-      game.bench.cutInverse = this.checked;
+      // HACK
+      game.bench.curTool.cutInverse = this.checked;
     });
 
     $('.change-view button').on('click', function () {

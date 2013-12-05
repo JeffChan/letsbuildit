@@ -4,15 +4,23 @@
 }
 
 .belly {
-	padding: 10px 30px;
+	padding: 0 30px 10px;
 	margin: 0 auto;
-	width: 960px;
 }
-
 
 canvas {
 	cursor: crosshair;
 	border: 2px solid #e36b23;
+}
+
+#sandbox {
+	position: relative;
+}
+
+.tools {
+	position: absolute;
+	top: 5px;
+	right: 0;
 }
 
 .tool {
